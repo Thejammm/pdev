@@ -146,6 +146,9 @@
   .growseg{display:flex;gap:6px;margin:2px 0 10px}
   .growseg button{flex:1;border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer}
   .growseg button.on{background:var(--btl);color:#fff;border-color:var(--btl)}
+  .pcbtns{display:flex;gap:13px;justify-content:flex-end;margin-top:5px}
+  .pcact{background:none;border:none;color:#8a93a1;font-size:12px;font-weight:700;cursor:pointer;padding:5px 0 0}
+  .pcact:active{color:var(--navy)}
   .pcdel{background:none;border:none;color:#b7bdc9;font-size:12px;font-weight:700;cursor:pointer;padding:5px 0 0}
   .pcdel:active{color:var(--red)}
   /* collapsible group */
@@ -337,9 +340,12 @@ function cardHTML(d){var c=calc(d),isB=d.mode==='btl',val=isB?c.netCF:c.profit;
   var meta='<span class="modetag '+d.mode+'">'+(isB?'BTL':'FLIP')+'</span> '+money(c.pp)+(isB?' · '+pct(c.grossYield)+' yield':' · GDV '+money(c.gdv));
   return '<div class="pcard '+d.mode+'" onclick="openDeal(\''+d.id+'\')"><div><div class="pcname">'+esc(d.name||'Untitled')+'</div><div class="pcmeta">'+meta+'</div></div>'+
     '<div class="pcright"><div class="cardtog" onclick="event.stopPropagation()"><button class="'+(!isB?'on':'')+'" onclick="cardMode(\''+d.id+'\',\'flip\',event)">Flip</button><button class="'+(isB?'on':'')+'" onclick="cardMode(\''+d.id+'\',\'btl\',event)">BTL</button></div>'+
-    '<div class="pcbig '+(val>=0?'pos':'neg')+'">'+big+'</div><div class="pclab">'+lab+'</div><button class="pcdel" onclick="removeCard(\''+d.id+'\',event)">Remove</button></div></div>';
+    '<div class="pcbig '+(val>=0?'pos':'neg')+'">'+big+'</div><div class="pclab">'+lab+'</div>'+
+    '<div class="pcbtns">'+(statusOf(d)==='archived'?'<button class="pcact" onclick="restoreCard(\''+d.id+'\',event)">Restore</button>':'<button class="pcact" onclick="archiveCard(\''+d.id+'\',event)">Archive</button>')+'<button class="pcdel" onclick="removeCard(\''+d.id+'\',event)">Delete</button></div></div></div>';
 }
-function removeCard(id,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.id===id);if(!confirm('Remove “'+((d&&d.name)||'this property')+'”? This cannot be undone.'))return;store.deals=store.deals.filter(x=>x.id!==id);if(store.current===id)store.current=store.deals.length?store.deals[0].id:null;save();renderDash();}
+function archiveCard(id,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.id===id);if(!d)return;d.status='archived';save();renderDash();toast('Off the dashboard — kept under Archived');}
+function restoreCard(id,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.id===id);if(!d)return;d.status='saved';save();renderDash();toast('Restored to the dashboard');}
+function removeCard(id,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.id===id);if(!confirm('Delete “'+((d&&d.name)||'this property')+'” for good? This cannot be undone — use Archive to keep it.'))return;store.deals=store.deals.filter(x=>x.id!==id);if(store.current===id)store.current=store.deals.length?store.deals[0].id:null;save();renderDash();}
 function folioHTML(){
   var saved=store.deals.filter(d=>statusOf(d)==='saved'&&d.mode==='btl');
   var mo=0;saved.forEach(d=>{mo+=calc(d).netCF;});
