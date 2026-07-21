@@ -125,6 +125,7 @@
   .cmptbl td{padding:9px 5px;text-align:center;border-bottom:1px solid var(--line);font-weight:700;font-variant-numeric:tabular-nums}
   .cmptbl td.rl{text-align:left;color:var(--muted);font-weight:600;font-size:11.5px;white-space:nowrap}
   .cmptbl td.best{background:var(--greenbg);color:var(--green)}
+  .cmptbl td.na{color:var(--faint);font-weight:600}
   .cmptbl .csub{display:block;font-size:10px;color:var(--muted);font-weight:600}
   .cmpset{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 14px;margin-bottom:14px}
   .cmpset-h{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--faint);margin:6px 0}
@@ -208,7 +209,8 @@ function lsSet(k,v){try{if(HAS_LS)localStorage.setItem(k,v);else MEM[k]=v;}catch
 var KEY='pdevPro_v1';var store={deals:[],current:null};
 function load(){var r=lsGet(KEY);if(r){try{store=JSON.parse(r);}catch(e){}}if(!store.deals)store.deals=[];
   if(!store.borrow)store.borrow={amount:165000,monthly:914,on:false};
-  if(!store.cmpRows)store.cmpRows=['purchase','gdv','cash','headline','monthly','return','mao','score'];
+  if(!store.cmpRows)store.cmpRows=['purchase','gdv','cash','potleft','headline','monthly','return','mao','score'];
+  if(!store.cmpMig){var ci=store.cmpRows.indexOf('cash');if(store.cmpRows.indexOf('potleft')<0)store.cmpRows.splice(ci>=0?ci+1:store.cmpRows.length,0,'potleft');store.cmpMig=1;}
   store.deals.forEach(d=>{if(!d.status)d.status='saved';});
   if(!store.deals.length){var d=defDeal();d.status='saved';store.deals.push(d);store.current=d.id;}
   if(!store.current)store.current=store.deals.length?store.deals[0].id:null;}
@@ -422,20 +424,21 @@ var METRICS=[
   {k:'purchase',label:'Purchase price',fn:c=>c.pp,fmt:v=>money(v),better:'lo'},
   {k:'gdv',label:'End value / GDV',fn:c=>c.gdv,fmt:v=>money(v),better:'hi'},
   {k:'cash',label:'Cash needed',fn:c=>c.cashInvested,fmt:v=>money(v),better:'lo'},
+  {k:'potleft',label:'Capital left (of pot)',fn:c=>num(store.borrow.amount)-c.cashInvested,fmt:v=>money(v),better:'hi'},
   {k:'headline',label:'Profit / cash flow',fn:(c,d)=>d.mode==='btl'?c.annualCF:c.profit,fmt:(v,x)=>money(v)+'<span class="csub">'+(x.d.mode==='btl'?'/yr':'total')+'</span>',better:'hi'},
   {k:'monthly',label:'Monthly',fn:(c,d)=>d.mode==='btl'?c.netCF:c.profitPM,fmt:v=>money(v)+'/mo',better:'hi'},
   {k:'return',label:'Return on cash',fn:(c,d)=>d.mode==='btl'?c.coc:c.roi,fmt:v=>pct(v),better:'hi'},
-  {k:'yield',label:'Gross yield',fn:c=>c.grossYield,fmt:v=>pct(v),better:'hi'},
+  {k:'yield',label:'Gross yield',mode:'btl',fn:c=>c.grossYield,fmt:v=>pct(v),better:'hi'},
   {k:'mao',label:'Max offer',fn:c=>c.mao,fmt:v=>money(v),better:'hi'},
   {k:'score',label:'Deal score',fn:c=>healthScores(c).overall,fmt:v=>v+'/100',better:'hi'},
-  {k:'equity',label:'Equity created',fn:c=>c.equity,fmt:v=>money(v),better:'hi'},
-  {k:'pullout',label:'Refinance pull-out',fn:c=>c.refiRelease,fmt:v=>money(v),better:'hi'},
-  {k:'capleft',label:'Capital left in deal',fn:c=>c.capitalLeftIn,fmt:v=>money(v),better:'lo'},
+  {k:'equity',label:'Equity created',mode:'btl',fn:c=>c.equity,fmt:v=>money(v),better:'hi'},
+  {k:'pullout',label:'Refinance pull-out',mode:'btl',fn:c=>c.refiRelease,fmt:v=>money(v),better:'hi'},
+  {k:'capleft',label:'Capital left in deal',mode:'btl',fn:c=>c.capitalLeftIn,fmt:v=>money(v),better:'lo'},
   {k:'ppm2',label:'£/m² purchase',fn:c=>c.ppm2,fmt:v=>money(v),better:'lo'},
   {k:'stamp',label:'Stamp duty',fn:c=>c.stamp,fmt:v=>money(v),better:'lo'},
   {k:'deposit',label:'Deposit',fn:c=>c.deposit,fmt:v=>money(v),better:'lo'},
   {k:'refurb',label:'Refurbishment',fn:c=>c.refurb,fmt:v=>money(v),better:'lo'},
-  {k:'breakeven',label:'Break-even sale',fn:c=>c.breakEven,fmt:v=>money(v),better:'lo'}
+  {k:'breakeven',label:'Break-even sale',mode:'flip',fn:c=>c.breakEven,fmt:v=>money(v),better:'lo'}
 ];
 function toggleCmpSettings(){cmpSettingsOpen=!cmpSettingsOpen;renderCompare();}
 function toggleCmpRow(k){var i=store.cmpRows.indexOf(k);if(i>=0)store.cmpRows.splice(i,1);else store.cmpRows.push(k);save();renderCompare();}
@@ -446,9 +449,9 @@ function compareTable(sel){
   if(!rows.length)return '<div class="empty">Nothing selected — tap ⚙ to choose what to compare.</div>';
   var head='<tr><td class="rl"></td>'+cs.map(x=>'<th><span class="modetag '+x.d.mode+'">'+(x.d.mode==='btl'?'BTL':'FLIP')+'</span><div class="cmpname">'+esc(x.d.name||'Untitled')+'</div></th>').join('')+'</tr>';
   var b=rows.map(mt=>{
-    var vals=cs.map(x=>mt.fn(x.c,x.d)),fin=vals.filter(v=>isFinite(v));
-    var best=mt.better&&fin.length?(mt.better==='hi'?Math.max.apply(null,fin):Math.min.apply(null,fin)):null;
-    var tds=cs.map((x,i)=>{var v=vals[i],isB=best!=null&&isFinite(v)&&v===best;return '<td'+(isB?' class="best"':'')+'>'+mt.fmt(v,x)+'</td>';}).join('');
+    var vals=cs.map(x=>(mt.mode&&x.d.mode!==mt.mode)?NaN:mt.fn(x.c,x.d)),fin=vals.filter(v=>isFinite(v));
+    var best=mt.better&&fin.length>1?(mt.better==='hi'?Math.max.apply(null,fin):Math.min.apply(null,fin)):null;
+    var tds=cs.map((x,i)=>{if(mt.mode&&x.d.mode!==mt.mode)return '<td class="na">—</td>';var v=vals[i],isB=best!=null&&isFinite(v)&&v===best;return '<td'+(isB?' class="best"':'')+'>'+mt.fmt(v,x)+'</td>';}).join('');
     return '<tr><td class="rl">'+mt.label+'</td>'+tds+'</tr>';
   }).join('');
   return '<div class="cmptbl-wrap"><table class="cmptbl">'+head+b+'</table></div><div class="hint" style="margin-top:10px">Deal score (0–100) is the fairest like-for-like comparison across Flip and Buy-to-Let.</div>';
