@@ -138,12 +138,13 @@
   .sc-hero .big{font-size:32px;font-weight:800;letter-spacing:-.6px;margin:4px 0}
   .sc-hero .big.pos{color:var(--green)} .sc-hero .big.neg{color:var(--red)}
   .sc-hero .sub{font-size:12.5px;color:var(--muted)}
-  .sc-bar{height:34px;border-radius:9px;overflow:hidden;display:flex;margin:6px 0 6px;background:#eef1f6}
-  .sc-bar .seg1{background:var(--navy);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;min-width:0}
-  .sc-bar .seg2{background:var(--green);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;min-width:0}
-  .sc-bar .seg1.over{background:var(--red)}
-  .sc-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-bottom:12px}
-  .sc-leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  .sc-bar{height:26px;border-radius:8px;overflow:hidden;display:flex;margin:8px 0 8px;background:#eef1f6;border:1px solid var(--line)}
+  .sc-bar .seg1{background:var(--navy)}
+  .sc-bar .seg2{background:var(--green)}
+  .sc-bar .seg1.over{background:var(--red);width:100%}
+  .sc-leg{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--ink);margin-bottom:14px}
+  .sc-leg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  .sc-leg .tot{color:var(--muted);font-weight:700;margin-left:auto}
   .growseg{display:flex;gap:6px;margin:2px 0 10px}
   .growseg button{flex:1;border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer}
   .growseg button.on{background:var(--btl);color:#fff;border-color:var(--btl)}
@@ -456,12 +457,14 @@ function summaryTab(c,d){var isB=c.isBtl,s=healthScores(c),col=s.overall>=70?'gr
 }
 function scorecardTab(c,d){
   if(!c.isBtl){
-    var cost=c.totalProjectCost,gdv=c.gdv,profit=c.profit,costPct=gdv>0?Math.min(100,cost/gdv*100):100;
+    var cost=c.totalProjectCost,gdv=c.gdv,profit=c.profit;
+    var costPct=gdv>0?Math.max(0,Math.min(100,cost/gdv*100)):100,pPct=Math.max(0,100-costPct);
+    if(profit>=0&&pPct>0&&pPct<6){pPct=6;costPct=94;}
     var bar=profit>=0
-      ? '<div class="sc-bar"><div class="seg1" style="width:'+costPct.toFixed(1)+'%">Costs</div><div class="seg2" style="flex:1">Profit</div></div>'
-      : '<div class="sc-bar"><div class="seg1 over" style="width:100%">Costs are more than it sells for</div></div>';
+      ? '<div class="sc-bar"><div class="seg1" style="width:'+costPct.toFixed(1)+'%"></div><div class="seg2" style="width:'+pPct.toFixed(1)+'%"></div></div>'
+      : '<div class="sc-bar"><div class="seg1 over"></div></div>';
     var h='<div class="sc-hero"><div class="lab">Profit if you flip it</div><div class="big '+(profit>=0?'pos':'neg')+'">'+money(profit)+'</div><div class="sub">'+pct(c.margin)+' margin · '+pct(c.roi)+' return on your cash</div></div>';
-    h+=bar+'<div class="sc-leg"><span><i style="background:var(--navy)"></i>Costs '+money(cost)+'</span><span><i style="background:var(--green)"></i>Profit '+money(profit)+'</span><span>Sells for '+money(gdv)+'</span></div>';
+    h+=bar+'<div class="sc-leg"><span><i style="background:var(--navy)"></i>Costs '+money(cost)+'</span><span><i style="background:var(--green)"></i>Profit '+money(profit)+(gdv>0?' ('+pct(c.margin)+')':'')+'</span><span class="tot">Sells for '+money(gdv)+'</span></div>';
     h+='<div class="kv">'+O('It costs you (all in)',money(cost),'','','Purchase + acquisition + refurbishment + finance + holding + selling.')+O('It sells for (GDV)',money(gdv))+O('Cash you tie up',money(c.cashInvested),'','','The deposit and costs you fund yourself.')+O('You keep (profit)',money(profit),profit>=0?'pos':'neg',true,'Sale price − everything it costs you.')+'</div>';
     return h;
   }
