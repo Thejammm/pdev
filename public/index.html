@@ -59,6 +59,8 @@
   select.inp{width:auto;min-width:128px;font-weight:700}
   .affix{display:flex;align-items:center;gap:4px}
   .u{font-size:12px;color:var(--muted);font-weight:700}
+  .mlink{display:inline-block;color:var(--accent);font-size:13px;font-weight:700;text-decoration:none;padding:9px 2px 4px}
+  .mlink:active{opacity:.6}
   .det-tog{display:flex;align-items:center;gap:6px;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;padding:11px 2px 9px}
   .det-tog .cx{transition:transform .15s;font-weight:800}
   .det-tog.open .cx{transform:rotate(90deg)}
@@ -142,11 +144,12 @@ function money(n){if(n===Infinity)return '∞';if(isNaN(n)||n==null)return '—'
 function pct(n){if(isNaN(n)||!isFinite(n))return '—';return (n*100).toFixed(1)+'%';}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
 function today(){var d=new Date();return d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});}
+function mapLinkHTML(pc){pc=String(pc==null?'':pc).trim();if(!pc)return '';return '<a class="mlink" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(pc+', UK')+'" target="_blank" rel="noopener">View on Google Maps ↗</a>';}
 function sdlt(p){var b=[[0,125000,.05],[125000,250000,.07],[250000,925000,.10],[925000,1500000,.15],[1500000,1e12,.17]];var t=0;for(var i=0;i<b.length;i++)t+=Math.max(0,Math.min(p,b[i][1])-b[i][0])*b[i][2];return t;}
 function amortPay(P,r,n){if(P<=0)return 0;if(r<=0)return P/n;return P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);}
 function amortBal(P,r,n,a){if(P<=0)return 0;if(r<=0)return Math.max(0,P-(P/n)*a);var pay=amortPay(P,r,n),bal=P;for(var i=0;i<a&&i<n;i++)bal=bal*(1+r)-pay;return Math.max(0,bal);}
 function defDeal(){return{id:uid(),name:'New appraisal',mode:'flip',
-  address:'',purchasePrice:200000,offerPrice:190000,marketValue:220000,gdv:275000,monthlyRent:1250,
+  address:'',postcode:'',purchasePrice:200000,offerPrice:190000,marketValue:220000,gdv:275000,monthlyRent:1250,
   propertyType:'Terraced house',floorArea:90,bedrooms:3,bathrooms:1,
   mortgageType:'bridging',mortgageBasis:'interest',depositPct:25,interestRate:9,termYears:1,
   arrangeFeePct:2,brokerFee:1500,valuationFee:500,refiLTV:75,
@@ -186,11 +189,12 @@ function calc(d,ov){ov=ov||{};
   var totalProjectCost=isBtl?(pp+acqTotal+refurb+financeCosts+holdTotNonMort):projectCost;
   return{pp,gdv,rentM,months,isBtl,isCash,deposit,mortgage,ltv,arrange,financeFees,monthlyPay,financeInterest,financeCosts,stamp,acqTotal,rBase,contingency,refurb,holdMoNonMort,holdTotNonMort,holdMoIncl,holdTotIncl,sellAgent,sellFixed,sellTotal,cashBeforeRefurb,cashInvested,projectCost,totalProjectCost,profit,roi,roce,margin,profitPM,breakEven,mao:maoU,opMonthly,netCF,annualCF,grossYield,netYield,coc,newLoan,refiRelease,capitalLeftIn,cocLeftIn,equity,discount,ppm2:num(d.floorArea)>0?pp/num(d.floorArea):0,gdvm2:num(d.floorArea)>0?gdv/num(d.floorArea):0,refurbm2:num(d.floorArea)>0?refurb/num(d.floorArea):0,refurbPctPP:pp>0?refurb/pp:0};
 }
-function F(k,label,type,unit,tip,cls){return{k,label,type:type||'money',unit:unit||'£',tip:tip||'',adj:cls?cls[0]:'',cert:cls?cls[1]:'',risk:cls?cls[2]:'',ctrl:cls?cls[3]:null};}
+function F(k,label,type,unit,tip,cls){return{k,label,type:type||'money',unit:(unit==null?'£':unit),tip:tip||'',adj:cls?cls[0]:'',cert:cls?cls[1]:'',risk:cls?cls[2]:'',ctrl:cls?cls[3]:null};}
 var TYPES=['Terraced house','Semi-detached','Detached','Flat','Bungalow','HMO','Commercial'];
 var GROUPS=[
  {id:'purchase',tab:'purchase',t:'Property & price',modes:'both',fields:[
    F('address','Property address','text','',''),
+   F('postcode','Postcode','text','','Type a postcode to open the area in Google Maps.'),
    F('purchasePrice','Purchase price','money','£','What you actually pay for the property.',['Yes','Variable','High',true]),
    F('offerPrice','Offer price','money','£','Compare this with the max offer in the summary.',['Yes','Variable','Medium',true]),
    F('marketValue','Market value (as-is)','money','£','Current value before works.',['No','Estimated','Medium',false]),
@@ -274,6 +278,7 @@ function setTab(t){curTab=t;render();window.scrollTo(0,0);}
 function q(f){return f.tip?'<span class="q" title="'+esc(f.tip)+'">?</span>':'';}
 function fieldHTML(d,f){
   var v=d[f.k];
+  if(f.k==='postcode'){return '<div class="fld"><div class="l">'+f.label+q(f)+'</div><div class="affix"><input class="inp txt" inputmode="text" value="'+esc(v)+'" oninput="upd(\'postcode\',this.value)"></div></div><div id="mapLink">'+mapLinkHTML(v)+'</div>';}
   if(f.type==='pctdep'){var pp=num(d.purchasePrice),p=num(d.depositPct),amt=Math.round(pp*p/100);
     return '<div class="fld"><div class="l">'+f.label+q(f)+'</div><div class="affix"><input id="dPct" class="inp" style="width:62px" inputmode="decimal" value="'+esc(v)+'" oninput="updDep(\'pct\',this.value)"><span class="u">%</span><span class="u">£</span><input id="dAmt" class="inp" style="width:90px" inputmode="decimal" value="'+esc(amt)+'" oninput="updDep(\'amt\',this.value)"></div></div>';}
   if(f.type==='select'){var opts=f.k==='mortgageType'?[['btl','Buy to Let'],['bridging','Bridging'],['cash','Cash']]:f.k==='mortgageBasis'?[['interest','Interest only'],['repayment','Repayment']]:TYPES.map(t=>[t,t]);
@@ -375,6 +380,7 @@ function repaint(){var d=deal(),c=calc(d);
     '<div class="mini">'+(isB?'Yield <b>'+pct(c.grossYield)+'</b>':'ROI <b>'+pct(c.roi)+'</b>')+' · Cash <b>'+money(c.cashInvested)+'</b> · Max offer <b>'+money(c.mao)+'</b></div>';
   document.getElementById('sub').textContent=(isB?'Buy to Let':'Flip')+' · '+(d.name||'appraisal');
   GROUPS.forEach(g=>{var el=document.getElementById('det-'+g.id);if(el)el.innerHTML=detFor(g.id,c);});
+  var ml=document.getElementById('mapLink');if(ml)ml.innerHTML=mapLinkHTML(d.postcode);
   if(curTab==='summary')document.getElementById('tabc').innerHTML=summaryTab(c,d);
   if(curTab==='risk')paintRisk(d);
 }
