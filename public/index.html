@@ -175,6 +175,7 @@
   .btoggle.on .dot2{background:var(--btl)}
   .dot2:after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;left:2px;transition:.15s}
   .btoggle.on .dot2:after{left:16px}
+  .fsep{border-top:1px solid var(--line);margin:8px 0}
   .fnote{font-size:11px;color:var(--muted);margin-top:7px}
   .fnote a{color:var(--accent);cursor:pointer;font-weight:700}
 </style>
@@ -351,14 +352,20 @@ function restoreCard(id,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.
 function removeCard(id,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.id===id);if(!confirm('Delete “'+((d&&d.name)||'this property')+'” for good? This cannot be undone — use Archive to keep it.'))return;store.deals=store.deals.filter(x=>x.id!==id);if(store.current===id)store.current=store.deals.length?store.deals[0].id:null;save();renderDash();}
 function folioHTML(){
   var saved=store.deals.filter(d=>statusOf(d)==='saved'&&d.mode==='btl');
-  var mo=0;saved.forEach(d=>{mo+=calc(d).netCF;});
-  var b=store.borrow,off=num(b.monthly),net=mo-off;
-  var h='<div class="folio"><h4>Long-term plan — rental income</h4>'+
-    '<div class="frow"><span>Monthly income'+(saved.length?' ('+saved.length+' rental'+(saved.length>1?'s':'')+')':' (no saved rentals yet)')+'</span><b>'+money(mo)+'</b></div>'+
+  var mo=0,val=0,mort=0;saved.forEach(d=>{var c=calc(d);mo+=c.netCF;val+=c.gdv;mort+=c.mortgage;});
+  var b=store.borrow,off=num(b.monthly),pers=num(b.amount),borrowed=mort+pers,equity=val-borrowed,net=mo-off;
+  var h='<div class="folio"><h4>Long-term plan — portfolio ('+saved.length+' rental'+(saved.length===1?'':'s')+')</h4>'+
+    '<div class="frow"><span>Total property value</span><b>'+money(val)+'</b></div>'+
+    '<div class="frow"><span>Mortgages</span><b>'+money(mort)+'</b></div>'+
+    '<div class="frow"><span>Borrowed personally</span><b>'+money(pers)+'</b></div>'+
+    '<div class="frow"><span>Total borrowed</span><b>'+money(borrowed)+'</b></div>'+
+    '<div class="frow"><span>Your equity</span><b style="color:'+(equity>=0?'var(--green)':'var(--red)')+'">'+money(equity)+'</b></div>'+
+    '<div class="fsep"></div>'+
+    '<div class="frow"><span>Monthly income</span><b>'+money(mo)+'</b></div>'+
     '<div class="frow"><span>Weekly</span><b>'+money(mo*12/52)+'</b></div>'+
     '<button class="btoggle'+(b.on?' on':'')+'" onclick="toggleBorrow()"><span>Offset my borrowing · −'+money(off)+'/mo</span><span class="dot2"></span></button>';
   if(b.on)h+='<div class="frow net"><span>After borrowing</span><b>'+money(net)+'/mo</b></div><div class="frow net"><span>Weekly after borrowing</span><b>'+money(net*12/52)+'</b></div>';
-  h+='<div class="fnote">'+money(num(b.amount))+' borrowed · '+money(off)+'/mo · <a onclick="editBorrow()">edit</a> · counts your saved Buy-to-Let cash flow</div></div>';
+  h+='<div class="fnote">Personal borrowing '+money(pers)+' at '+money(off)+'/mo · <a onclick="editBorrow()">edit</a>. Value, mortgages and income cover your saved Buy-to-Let properties.</div></div>';
   return h;
 }
 function toggleBorrow(){store.borrow.on=!store.borrow.on;save();renderDash();}
