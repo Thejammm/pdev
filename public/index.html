@@ -173,6 +173,20 @@
   .growseg{display:flex;gap:6px;margin:2px 0 10px}
   .growseg button{flex:1;border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer}
   .growseg button.on{background:var(--btl);color:#fff;border-color:var(--btl)}
+  .glegend{display:flex;gap:16px;margin:4px 0 8px;font-size:12px;font-weight:700;color:var(--muted)}
+  .glegend .gk{display:flex;align-items:center;gap:6px}
+  .gd{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .gd.val{background:var(--accent)} .gd.rent{background:var(--green)}
+  .gtab{width:100%;border-collapse:collapse;font-size:13px}
+  .gtab th,.gtab td{padding:9px 7px;text-align:right;border-bottom:1px solid var(--line);vertical-align:top}
+  .gtab thead th{font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+  .gtab tbody th{text-align:left;font-weight:700;color:var(--ink);white-space:nowrap}
+  .gtab .gval{color:var(--accent);font-weight:700}
+  .gtab .grent{color:var(--green);font-weight:700}
+  .gtab .gtot{font-weight:800;color:var(--navy)}
+  .gtab .gsub{display:block;font-size:11px;font-weight:600;opacity:.8}
+  .gtab tr:last-child td,.gtab tr:last-child th{border-bottom:none}
+  .ghint{font-size:11.5px;color:var(--muted);background:var(--bg);border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.45}
   .pcbtns{display:flex;gap:16px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line);flex-wrap:wrap}
   .pcact{background:none;border:none;color:var(--accent);font-size:12.5px;font-weight:700;cursor:pointer;padding:0}
   .pcact:active{opacity:.6}
@@ -599,8 +613,7 @@ function scorecardTab(c,d){
     return h;
   }
   var gp=num(d.growthPct)||5,g=gp/100,base=num(d.gdv)||num(d.marketValue)||c.pp;
-  var v5=base*Math.pow(1+g,5),v10=base*Math.pow(1+g,10),gain5=v5-base,gain10=v10-base;
-  var run=c.monthlyPay+c.opMonthly,totalRet10=c.netCF*120+gain10;
+  var run=c.monthlyPay+c.opMonthly;
   var h='<div class="sc-hero"><div class="lab">You keep each month</div><div class="big '+(c.netCF>=0?'pos':'neg')+'">'+money(c.netCF)+'/mo</div><div class="sub">'+money(c.annualCF)+' a year · '+pct(c.grossYield)+' gross yield</div></div>';
   h+='<h2 class="sec">The purchase</h2><div class="kv">'+O('Purchase price',money(c.pp))+O('Your deposit',money(c.deposit),'','','At '+num(d.depositPct)+'% of the price.')+O('Mortgage / loan',money(c.mortgage),'',true,'Purchase price − your deposit — the mortgage you need ('+pct(c.ltv)+' loan-to-value).')+'</div>';
   h+='<h2 class="sec">The monthly picture</h2><div class="kv">'+O('Rent it brings in',money(c.rentM)+'/mo')+O('Running costs (incl. mortgage)','−'+money(run)+'/mo','neg','','Mortgage '+money(c.monthlyPay)+' + running costs '+money(c.opMonthly)+'.')+O('You keep (net)',money(c.netCF)+'/mo',c.netCF>=0?'pos':'neg',true,'Rent − mortgage − running costs.')+O('Cash you put in',money(c.cashInvested))+'</div>';
@@ -612,9 +625,14 @@ function scorecardTab(c,d){
   h+='<div class="lvhelp">Most BTL remortgages go up to <b>75%</b>, a few lenders to <b>80%</b>. A higher LTV pulls out more cash but leaves a bigger mortgage to service — and the rent still has to cover it.</div>';
   if(c.refiNetCF<0)h+='<div class="lvwarn">⚠ At '+num(d.refiLTV)+'% the new mortgage costs more than the rent brings in — you’d have to top it up each month.</div>';
   else if(isFinite(cover)&&cover<1.25)h+='<div class="lvwarn">⚠ The rent only covers '+Math.round(cover*100)+'% of the new mortgage interest — lenders usually want ~125–145%, so this LTV may not get approved.</div>';
-  h+='<h2 class="sec">If the property grows in value</h2><div class="hint">UK house prices have risen about 5% a year on average over the long term (ONS House Price Index). Pick a rate:</div>';
+  h+='<h2 class="sec">If the property grows in value</h2><div class="hint">UK house prices have risen about 5% a year on average over the long term (ONS House Price Index). Pick a rate — value today '+money(base)+'.</div>';
   h+='<div class="growseg">'+[3,4,5,7].map(p=>'<button class="'+(gp===p?'on':'')+'" onclick="setGrowth('+p+')">'+p+'%/yr</button>').join('')+'</div>';
-  h+='<div class="kv">'+O('Value today',money(base))+O('In 5 years',money(v5)+' (+'+money(gain5)+')','pos')+O('In 10 years',money(v10)+' (+'+money(gain10)+')','pos')+O('Total return over 10 years',money(totalRet10),totalRet10>=0?'pos':'neg',true,'Rent you keep over 10 years ('+money(c.netCF*120)+') + value growth ('+money(gain10)+'). Rough guide — ignores rent rises and remortgaging.')+'</div>';
+  h+='<div class="glegend"><span class="gk"><i class="gd val"></i>Value growth</span><span class="gk"><i class="gd rent"></i>Rent kept</span></div>';
+  h+='<table class="gtab"><thead><tr><th></th><th>Property value</th><th>Rent kept</th><th>Total gain</th></tr></thead><tbody>';
+  [5,10,15].forEach(function(y){var val=base*Math.pow(1+g,y),gain=val-base,rent=c.netCF*12*y,tot=gain+rent;
+    h+='<tr><th>In '+y+' years</th><td class="gval">'+money(val)+'<span class="gsub gval">+'+money(gain)+' growth</span></td><td class="grent">'+money(rent)+'</td><td class="gtot">'+money(tot)+'</td></tr>';});
+  h+='</tbody></table>';
+  h+='<div class="ghint"><b class="gval" style="color:var(--accent)">Value growth</b> is what the property gains in worth. <b class="grent" style="color:var(--green)">Rent kept</b> is the net cash you pocket each month ('+money(c.netCF)+'/mo after mortgage &amp; costs) added up over the years. Total gain gives you both together. Rough guide — ignores rent rises, remortgaging and selling costs.</div>';
   return h;
 }
 function setGrowth(p){deal().growthPct=p;save();renderTab();}
@@ -722,7 +740,7 @@ function makePDF(fname,title,subtitle,sections){var pw=595,ph=842,mL=50,mR=545,t
   var xp=out.length;out+='xref\n0 '+(cnt+1)+'\n0000000000 65535 f \n';for(i=1;i<=cnt;i++)out+=('0000000000'+off[i]).slice(-10)+' 00000 n \n';out+='trailer\n<< /Size '+(cnt+1)+' /Root 1 0 R >>\nstartxref\n'+xp+'\n%%EOF';
   var by=new Uint8Array(out.length);for(i=0;i<out.length;i++)by[i]=out.charCodeAt(i)&0xFF;var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([by],{type:'application/pdf'}));a.download=fname;a.click();}
 function exportPDF(){var d=deal(),c=calc(d),isB=c.isBtl;
-  var gp=num(d.growthPct)||5,g=gp/100,base=num(d.gdv)||num(d.marketValue)||c.pp,v5=base*Math.pow(1+g,5),v10=base*Math.pow(1+g,10),totalRet10=c.netCF*120+(v10-base);
+  var gp=num(d.growthPct)||5,g=gp/100,base=num(d.gdv)||num(d.marketValue)||c.pp;
   var secs=[];
   secs.push({h:'Headline',rows:[['Deal score',healthScores(c).overall+' / 100',true],[isB?'Net cash flow / mo':'Expected profit',isB?money(c.netCF):money(c.profit),true],[isB?'Annual cash flow':'Profit margin (on GDV)',isB?money(c.annualCF):pct(c.margin)],[isB?'Gross yield':'Return on cash (ROI)',isB?pct(c.grossYield):pct(c.roi)],['Total cash needed',money(c.cashInvested)],['Maximum offer price',money(c.mao),true],isB?['Cash-on-cash return',pct(c.coc)]:['Break-even sale',money(c.breakEven)]]});
   secs.push({h:'The purchase',rows:[['Address',d.address||'-'],['Purchase price',money(c.pp)],['Market value (as-is)',money(num(d.marketValue))],['End value / GDV',money(c.gdv)],['Discount below market value',pct(c.discount)],['Your deposit ('+num(d.depositPct)+'%)',money(c.deposit)],['Mortgage / loan',money(c.mortgage)],['Loan to value (LTV)',pct(c.ltv)],['Floor area',num(d.floorArea)+' m2'],['Price per m2',money(c.ppm2)]]});
@@ -730,7 +748,8 @@ function exportPDF(){var d=deal(),c=calc(d),isB=c.isBtl;
     secs.push({h:'Rent vs mortgage - every month',rows:[['Rent received',money(c.rentM)],['Mortgage payment',money(c.monthlyPay)],['Running costs',money(c.opMonthly)],['Net cash flow',money(c.netCF),true],['Annual cash flow',money(c.annualCF)]]});
     secs.push({h:'Your equity',rows:[['Property value',money(c.gdv)],['Your mortgage',money(c.mortgage)],['Your equity (what is left in it)',money(c.gdv-c.mortgage),true],['Gross yield',pct(c.grossYield)],['Net yield',pct(c.netYield)]]});
     secs.push({h:'Refinance to pull cash out (at '+num(d.refiLTV)+'% LTV)',rows:[['New mortgage',money(c.newLoan)],['Cash you can pull out',money(c.refiRelease),true],['New mortgage payment',money(c.refiPay)+' /mo'],['Net income after refinancing',money(c.refiNetCF)+' /mo'],['Capital left in the deal',money(c.capitalLeftIn)]]});
-    secs.push({h:'If it grows in value (at '+gp+'%/yr)',rows:[['Value today',money(base)],['In 5 years',money(v5)+'  (+'+money(v5-base)+')'],['In 10 years',money(v10)+'  (+'+money(v10-base)+')'],['Total return over 10 years',money(totalRet10),true]]});
+    var grows=[['Value today',money(base)]];[5,10,15].forEach(function(y){var val=base*Math.pow(1+g,y),gain=val-base,rent=c.netCF*12*y;grows.push(['In '+y+' yrs - property value',money(val)+' (+'+money(gain)+')']);grows.push(['In '+y+' yrs - rent kept',money(rent)]);grows.push(['In '+y+' yrs - total gain',money(gain+rent),true]);});
+    secs.push({h:'If it grows in value (at '+gp+'%/yr)',rows:grows});
   }else{
     secs.push({h:'Costs vs sale vs profit',rows:[['It costs you (all in)',money(c.totalProjectCost)],['It sells for (GDV)',money(c.gdv)],['Cash you tie up',money(c.cashInvested)],['Profit',money(c.profit),true],['Profit margin (on GDV)',pct(c.margin)],['Return on cash (ROI)',pct(c.roi)]]});
   }
