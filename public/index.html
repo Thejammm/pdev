@@ -126,6 +126,8 @@
   .cmptbl td.rl{text-align:left;color:var(--muted);font-weight:600;font-size:11.5px;white-space:nowrap}
   .cmptbl td.best{background:var(--greenbg);color:var(--green)}
   .cmptbl td.na{color:var(--faint);font-weight:600}
+  .cmptbl td:not(.rl){cursor:pointer}
+  .cmptbl td:not(.rl):active{background:#eef1f6}
   .cmptbl .csub{display:block;font-size:10px;color:var(--muted);font-weight:600}
   .cmpset{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 14px;margin-bottom:14px}
   .cmpset-h{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--faint);margin:6px 0}
@@ -185,6 +187,12 @@
   /* portfolio / borrowing */
   .folio{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:14px;border-left:5px solid var(--btl)}
   .folio h4{margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--faint);font-weight:800}
+  .fhead{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+  .fttl{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--faint);font-weight:800}
+  .fhead .gcx{color:#aab2c0;font-weight:800;transition:transform .15s}
+  .fhead .gcx.fopen{transform:rotate(90deg)}
+  .fsum{font-size:13.5px;color:var(--muted);margin-top:8px}
+  .fsum b{color:var(--ink);font-weight:700}
   .frow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:14px}
   .frow b{font-size:17px;font-weight:800;color:var(--navy)}
   .frow.net b{color:var(--green)}
@@ -376,8 +384,10 @@ function folioHTML(){
   var mo=0,val=0,mort=0,deps=0,stamp=0,buy=0,fin=0,hold=0,reno=0,spent=0,release=0,refiNet=0;
   saved.forEach(d=>{var c=calc(d);mo+=c.netCF;val+=c.gdv;mort+=c.mortgage;deps+=c.deposit;stamp+=c.stamp;buy+=(c.acqTotal-c.stamp);fin+=c.financeFees;hold+=c.holdTotNonMort;reno+=c.refurb;spent+=c.cashInvested;release+=c.refiRelease;refiNet+=c.refiNetCF;});
   var b=store.borrow,off=num(b.monthly),pers=num(b.amount),left=pers-spent,equity=val-mort,net=mo-off;
-  var h='<div class="folio"><h4>Your capital — spent vs left ('+saved.length+' rental'+(saved.length===1?'':'s')+')</h4>'+
-    '<div class="frow"><span>Deposits</span><b>'+money(deps)+'</b></div>'+
+  var open=store.folioOpen===true;
+  var h='<div class="folio"><div class="fhead" onclick="toggleFolio()"><span class="fttl">Your capital — spent vs left ('+saved.length+' rental'+(saved.length===1?'':'s')+')</span><span class="gcx'+(open?' fopen':'')+'">›</span></div>';
+  if(!open){h+='<div class="fsum">Spent <b>'+money(spent)+'</b> · Left <b>'+money(left)+'</b> · Income <b>'+money(mo)+'/mo</b></div></div>';return h;}
+  h+='<div class="frow"><span>Deposits</span><b>'+money(deps)+'</b></div>'+
     '<div class="frow"><span>Stamp duty</span><b>'+money(stamp)+'</b></div>'+
     '<div class="frow"><span>Buying costs</span><b>'+money(buy)+'</b></div>'+
     '<div class="frow"><span>Renovation</span><b>'+money(reno)+'</b></div>'+
@@ -402,6 +412,7 @@ function folioHTML(){
   return h;
 }
 function toggleBorrow(){store.borrow.on=!store.borrow.on;save();renderDash();}
+function toggleFolio(){store.folioOpen=!(store.folioOpen===true);save();renderDash();}
 function editBorrow(){var a=prompt('Total capital you have borrowed (£):',store.borrow.amount);if(a===null)return;var mo=prompt('What it costs you per month (£):',store.borrow.monthly);if(mo===null)return;store.borrow.amount=num(a);store.borrow.monthly=num(mo);save();renderDash();}
 function cardMode(id,m,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.id===id);if(d){d.mode=m;save();renderDash();}}
 function setFilter(f){dashFilter=f;renderDash();}
@@ -416,7 +427,8 @@ function renderCompare(){
   h+='<div class="hint">Tap 2 or 3 properties to compare. Tap ⚙ to choose what to compare. Best in each row is green.</div>';
   h+='<div class="cmpchips">'+deals.map(d=>'<button class="cmpchip'+(compareSel.indexOf(d.id)>=0?' on '+d.mode:'')+'" onclick="toggleCompare(\''+d.id+'\')">'+esc(d.name||'Untitled')+'</button>').join('')+'</div>';
   var sel=compareSel.map(id=>store.deals.find(x=>x.id===id)).filter(Boolean).slice(0,3);
-  h+=sel.length<2?'<div class="empty">Pick at least two properties above.</div>':compareTable(sel);
+  if(sel.length<2)h+='<div class="empty">Pick at least two properties above.</div>';
+  else{h+=compareTable(sel);h+='<div class="hint" style="margin-top:8px">Tap any figure to jump straight to it in that property.</div><button class="pdfbtn" onclick="exportComparePDF()">⬇︎ Export comparison (PDF)</button>';}
   h+='</div>';document.getElementById('app').innerHTML=h;
 }
 var cmpSettingsOpen=false;
@@ -443,6 +455,16 @@ var METRICS=[
 function toggleCmpSettings(){cmpSettingsOpen=!cmpSettingsOpen;renderCompare();}
 function toggleCmpRow(k){var i=store.cmpRows.indexOf(k);if(i>=0)store.cmpRows.splice(i,1);else store.cmpRows.push(k);save();renderCompare();}
 function cmpSettingsHTML(){return '<div class="cmpset"><div class="cmpset-h">Choose what to compare</div>'+METRICS.map(mt=>'<label class="cmprow"><input type="checkbox" '+(store.cmpRows.indexOf(mt.k)>=0?'checked':'')+' onchange="toggleCmpRow(\''+mt.k+'\')"><span>'+mt.label+'</span></label>').join('')+'</div>';}
+var METRIC_TAB={purchase:'purchase',gdv:'purchase',cash:'summary',potleft:'summary',headline:'summary',monthly:'summary',return:'summary',yield:'summary',mao:'summary',score:'summary',equity:'summary',pullout:'scorecard',capleft:'scorecard',ppm2:'purchase',stamp:'costs',deposit:'finance',refurb:'costs',breakeven:'scorecard'};
+function drillTo(id,tab){store.current=id;view='deal';curTab=tab||'summary';sens={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};stressOn=null;render();window.scrollTo(0,0);}
+function exportComparePDF(){
+  var sel=compareSel.map(id=>store.deals.find(x=>x.id===id)).filter(Boolean).slice(0,3);
+  if(sel.length<2){alert('Pick at least two properties to compare.');return;}
+  var cs=sel.map(d=>({d:d,c:calc(d)})),rows=METRICS.filter(mt=>store.cmpRows.indexOf(mt.k)>=0);
+  var cols=cs.map(x=>(x.d.mode==='btl'?'BTL ':'FLIP ')+String(x.d.name||'Untitled').slice(0,16));
+  var body=rows.map(mt=>{var r=[mt.label];cs.forEach(x=>{if(mt.mode&&x.d.mode!==mt.mode){r.push('-');}else{var v=mt.fn(x.c,x.d);r.push(String(mt.fmt(v,x)).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim());}});return r;});
+  makePDF('property-comparison.pdf','Property comparison',sel.length+' properties - prepared '+today(),[{h:'Side by side',cols:cols,rows:body}]);
+}
 function compareTable(sel){
   var cs=sel.map(d=>({d:d,c:calc(d)}));
   var rows=METRICS.filter(mt=>store.cmpRows.indexOf(mt.k)>=0);
@@ -451,7 +473,8 @@ function compareTable(sel){
   var b=rows.map(mt=>{
     var vals=cs.map(x=>(mt.mode&&x.d.mode!==mt.mode)?NaN:mt.fn(x.c,x.d)),fin=vals.filter(v=>isFinite(v));
     var best=mt.better&&fin.length>1?(mt.better==='hi'?Math.max.apply(null,fin):Math.min.apply(null,fin)):null;
-    var tds=cs.map((x,i)=>{if(mt.mode&&x.d.mode!==mt.mode)return '<td class="na">—</td>';var v=vals[i],isB=best!=null&&isFinite(v)&&v===best;return '<td'+(isB?' class="best"':'')+'>'+mt.fmt(v,x)+'</td>';}).join('');
+    var tab=METRIC_TAB[mt.k]||'summary';
+    var tds=cs.map((x,i)=>{var oc=' onclick="drillTo(\''+x.d.id+'\',\''+tab+'\')"';if(mt.mode&&x.d.mode!==mt.mode)return '<td class="na"'+oc+'>—</td>';var v=vals[i],isB=best!=null&&isFinite(v)&&v===best;return '<td'+(isB?' class="best"':'')+oc+'>'+mt.fmt(v,x)+'</td>';}).join('');
     return '<tr><td class="rl">'+mt.label+'</td>'+tds+'</tr>';
   }).join('');
   return '<div class="cmptbl-wrap"><table class="cmptbl">'+head+b+'</table></div><div class="hint" style="margin-top:10px">Deal score (0–100) is the fairest like-for-like comparison across Flip and Buy-to-Let.</div>';
@@ -645,7 +668,12 @@ function pdfW(s,size){var W={' ':278,',':278,'.':278,'-':333,'%':889,'/':278,'£
 function makePDF(fname,title,subtitle,sections){var pw=595,ph=842,mL=50,mR=545,top=800,bot=54;var pages=[],pg={t:[],r:[]},y=top;
   function flush(){pages.push(pg);pg={t:[],r:[]};y=top;}function T(x,yy,f,s,t,c){pg.t.push({x,y:yy,f,s,t:pdfText(t),c:c||[.1,.1,.1]});}function R(x1,x2,yy,c){pg.r.push({x1,x2,y:yy,c:c||[.8,.8,.8]});}function br(h){y-=(h||15);if(y<bot)flush();}
   T(mL,y,'F2',18,title,[.12,.22,.39]);br(22);T(mL,y,'F1',10,subtitle,[.42,.42,.42]);br(8);R(mL,mR,y,[.12,.22,.39]);br(18);
-  sections.forEach(sec=>{if(y-34<bot)flush();T(mL,y,'F2',12,sec.h,[.12,.22,.39]);br(4);R(mL,mR,y);br(15);sec.rows.forEach(rw=>{if(y-15<bot)flush();var bold=!!rw[2],col=bold?[.12,.22,.39]:[.1,.1,.1];T(mL,y,bold?'F2':'F1',11,rw[0],col);var vs=String(rw[1]);T(mR-pdfW(pdfText(vs),11),y,'F2',11,vs,col);br(15);});br(8);});
+  sections.forEach(sec=>{if(y-34<bot)flush();T(mL,y,'F2',12,sec.h,[.12,.22,.39]);br(4);R(mL,mR,y);br(15);
+    if(sec.cols){var nc=sec.cols.length,cs0=mL+150,cw=(mR-cs0)/nc;
+      sec.cols.forEach((ch,j)=>{var cx=cs0+cw*(j+1),s=String(ch);T(cx-pdfW(pdfText(s),9)-2,y,'F2',9,s,[.12,.22,.39]);});br(5);R(mL,mR,y);br(14);
+      sec.rows.forEach(rw=>{if(y-14<bot)flush();T(mL,y,'F1',10,rw[0],[.1,.1,.1]);for(var j=0;j<nc;j++){var cx=cs0+cw*(j+1),s=String(rw[j+1]);T(cx-pdfW(pdfText(s),10)-2,y,'F2',10,s,[.1,.1,.1]);}br(14);});br(8);
+    }else{sec.rows.forEach(rw=>{if(y-15<bot)flush();var bold=!!rw[2],col=bold?[.12,.22,.39]:[.1,.1,.1];T(mL,y,bold?'F2':'F1',11,rw[0],col);var vs=String(rw[1]);T(mR-pdfW(pdfText(vs),11),y,'F2',11,vs,col);br(15);});br(8);}
+  });
   flush();function cs(p){var s='';p.r.forEach(r=>{s+=r.c[0]+' '+r.c[1]+' '+r.c[2]+' RG 0.7 w '+r.x1+' '+r.y+' m '+r.x2+' '+r.y+' l S\n';});s+='BT\n';p.t.forEach(t=>{s+=t.c[0]+' '+t.c[1]+' '+t.c[2]+' rg /'+t.f+' '+t.s+' Tf 1 0 0 1 '+Math.round(t.x*100)/100+' '+Math.round(t.y*100)/100+' Tm ('+pdfEsc(t.t)+') Tj\n';});s+='ET\n';return s;}
   var out='%PDF-1.4\n%âãÏÓ\n',off={},cnt=0;function add(b){cnt++;off[cnt]=out.length;out+=cnt+' 0 obj\n'+b+'\nendobj\n';}
   var kids=[];for(var i=0;i<pages.length;i++)kids.push((5+2*i)+' 0 R');
