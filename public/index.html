@@ -60,6 +60,9 @@
   select.inp{width:auto;min-width:128px;font-weight:700}
   .affix{display:flex;align-items:center;gap:4px}
   .u{font-size:12px;color:var(--muted);font-weight:700}
+  .lvhelp{font-size:11.5px;color:var(--muted);background:#f4f7fb;border-radius:9px;padding:9px 12px;margin:8px 0 4px;line-height:1.55}
+  .lvhelp b{color:var(--ink);font-weight:700}
+  .lvwarn{font-size:11.5px;color:var(--amber);background:var(--amberbg);border-radius:9px;padding:9px 12px;margin:8px 0 4px;font-weight:600;line-height:1.55}
   .mlink{display:inline-block;color:var(--accent);font-size:13px;font-weight:700;text-decoration:none;padding:9px 2px 4px}
   .mlink:active{opacity:.6}
   .det-tog{display:flex;align-items:center;gap:6px;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;padding:11px 2px 9px}
@@ -295,6 +298,7 @@ var GROUPS=[
    F('mortgageType','Mortgage type','select','','BTL mortgage, short-term Bridging, or Cash (no borrowing).',['Yes','Fixed','Medium',true]),
    F('mortgageBasis','Basis','select','','Interest-only keeps monthly payments low; Repayment also pays down the loan.',['Yes','Fixed','Low',true]),
    F('depositPct','Deposit','pctdep','%','Your cash deposit. The % and the £ amount stay linked — change either.',['Yes','Variable','Medium',true]),
+   F('ltv','Loan to value (LTV)','ltv','%','The mortgage as a % of the price. Deposit % and LTV always add up to 100 — change either.',['Yes','Variable','Medium',true]),
    F('interestRate','Interest rate','num','%','Annual interest rate. Bridging is usually quoted per month — enter the annual equivalent (e.g. 0.9%/mo ≈ 11%).',['No','Variable','High',false]),
    F('termYears','Term','num','yrs','Loan term in years — used to work out repayment amortisation.',['Yes','Fixed','Low',true]),
    F('arrangeFeePct','Arrangement fee','num','%','Lender arrangement fee, as a % of the loan.',['No','Fixed','Low',false]),
@@ -513,6 +517,8 @@ function fieldHTML(d,f){
   if(f.k==='postcode'){body='<div class="'+fc+'"><div class="l">'+lab+'</div><div class="affix"><input class="inp txt" inputmode="text" value="'+esc(v)+'" oninput="upd(\'postcode\',this.value)"></div></div><div id="mapLink">'+mapLinkHTML(v)+'</div>';}
   else if(f.type==='pctdep'){var pp=num(d.purchasePrice),p=num(d.depositPct),amt=Math.round(pp*p/100);
     body='<div class="'+fc+'"><div class="l">'+lab+'</div><div class="affix"><input id="dPct" class="inp" style="width:62px" inputmode="decimal" value="'+esc(v)+'" oninput="updDep(\'pct\',this.value)"><span class="u">%</span><span class="u">£</span><input id="dAmt" class="inp" style="width:90px" inputmode="decimal" value="'+esc(amt)+'" oninput="updDep(\'amt\',this.value)"></div></div>';}
+  else if(f.type==='ltv'){var lv=Math.round((100-num(d.depositPct))*10)/10;
+    body='<div class="'+fc+'"><div class="l">'+lab+'</div><div class="affix"><input id="dLtv" class="inp" style="width:80px" inputmode="decimal" value="'+esc(lv)+'" oninput="updLtv(this.value)"><span class="u">%</span></div></div>';}
   else if(f.type==='select'){var opts=f.k==='mortgageType'?[['btl','Buy to Let'],['bridging','Bridging'],['cash','Cash']]:f.k==='mortgageBasis'?[['interest','Interest only'],['repayment','Repayment']]:TYPES.map(t=>[t,t]);
     body='<div class="'+fc+'"><div class="l">'+lab+'</div><select class="inp" oninput="upd(\''+f.k+'\',this.value)">'+opts.map(x=>'<option value="'+x[0]+'"'+(v===x[0]?' selected':'')+'>'+x[1]+'</option>').join('')+'</select></div>';}
   else{var isText=f.type==='text',aL=f.unit==='£'?'<span class="u">£</span>':'',aR=(f.unit&&f.unit!=='£')?'<span class="u">'+f.unit+'</span>':'';
@@ -529,6 +535,7 @@ function groupCard(d,g){
   var nb=applies?'':'<div class="nabox">Only used in '+(g.modes==='flip'?'Flip':'Buy to Let')+' mode — ignored while you’re in '+(d.mode==='flip'?'Flip':'Buy to Let')+'.</div>';
   return '<div class="grp '+(open?'open':'closed')+(applies?'':' na')+'" id="grp-'+g.id+'"><div class="ghead" onclick="toggleGrp(\''+g.id+'\')"><span>'+g.t+tag+'</span><span class="gcx">›</span></div><div class="gbody">'+nb+
     g.fields.map(f=>fieldHTML(d,f)).join('')+
+    (g.id==='finance'?'<div id="ltvHelp">'+ltvHelp(d)+'</div>':'')+
     '<div class="det-tog'+(det?' open':'')+'" onclick="toggleDet(\''+g.id+'\')"><span class="cx">›</span>Show figures</div>'+
     '<div class="det'+(det?' open':'')+'" id="det-'+g.id+'"></div>'+
     '<textarea class="notes" placeholder="Notes…" oninput="updNote(\''+g.id+'\',this.value)">'+esc((d.notes&&d.notes[g.id])||'')+'</textarea></div></div>';
@@ -654,6 +661,7 @@ function repaint(){var d=deal(),active=sensActive(),c=calc(d,ov());
     '<div class="mini">'+(isB?'Rent <b>'+money(c.rentM)+'</b> · Mortgage <b>'+money(c.monthlyPay)+'</b> · Net <b>'+money(c.netCF)+'/mo</b>':'ROI <b>'+pct(c.roi)+'</b> · Cash <b>'+money(c.cashInvested)+'</b> · Max offer <b>'+money(c.mao)+'</b>')+'</div>'+
     (active?'<div class="scen" onclick="resetSens()"><span>⚠ What-if scenario applied</span><span>Reset ✕</span></div>':'');}
   GROUPS.forEach(g=>{var el=document.getElementById('det-'+g.id);if(el)el.innerHTML=detFor(g.id,c);});
+  var lh=document.getElementById('ltvHelp');if(lh)lh.innerHTML=ltvHelp(d);
   var ml=document.getElementById('mapLink');if(ml)ml.innerHTML=mapLinkHTML(d.postcode);
   if(curTab==='summary')document.getElementById('tabc').innerHTML=summaryTab(c,d);
   if(curTab==='scorecard')document.getElementById('tabc').innerHTML=scorecardTab(c,d);
@@ -665,7 +673,18 @@ function upd(k,v){var d=deal();d[k]=v;save();
 function updDep(w,val){var d=deal(),pp=num(d.purchasePrice);
   if(w==='pct'){d.depositPct=num(val);var a=document.getElementById('dAmt');if(a)a.value=Math.round(pp*num(val)/100);}
   else{d.depositPct=pp>0?num(val)/pp*100:0;var p=document.getElementById('dPct');if(p)p.value=Math.round(d.depositPct*100)/100;}
+  var lt=document.getElementById('dLtv');if(lt)lt.value=Math.round((100-d.depositPct)*10)/10;
   save();repaint();}
+function updLtv(val){var d=deal(),lv=Math.max(0,Math.min(100,num(val)));d.depositPct=100-lv;var pp=num(d.purchasePrice);
+  var p=document.getElementById('dPct');if(p)p.value=Math.round(d.depositPct*100)/100;
+  var a=document.getElementById('dAmt');if(a)a.value=Math.round(pp*d.depositPct/100);
+  save();repaint();}
+function ltvHelp(d){var mt=d.mortgageType,ltv=100-num(d.depositPct),max,txt;
+  if(mt==='cash')return '<div class="lvhelp"><b>Cash purchase</b> — no mortgage, you fund 100%. Switch the mortgage type to BTL or Bridging if you want to borrow and put in less.</div>';
+  if(mt==='btl'){max=80;txt='<b>Buy-to-Let mortgages</b> usually go up to <b>75%</b> LTV (25% deposit), a few lenders to <b>80%</b>. The rent has to cover roughly <b>125–145%</b> of the mortgage interest (the lender’s stress test) — so a higher LTV needs stronger rent to qualify.';}
+  else{max=75;txt='<b>Bridging</b> usually lends up to <b>70–75%</b> of the value. It’s short-term and expensive — you repay it by refinancing onto a BTL mortgage or selling.';}
+  var warn=ltv>max?'<div class="lvwarn">⚠ '+Math.round(ltv)+'% LTV is above the ~'+max+'% most '+(mt==='btl'?'BTL':'bridging')+' lenders will do. You’d likely need a bigger deposit, or it won’t get approved.</div>':(ltv>=max-5&&ltv<=max?'<div class="lvhelp">You’re near the top of what lenders allow — expect fewer products and higher rates.</div>':'');
+  return '<div class="lvhelp">'+txt+'</div>'+warn;}
 function updNote(id,v){var d=deal();if(!d.notes)d.notes={};d.notes[id]=v;save();}
 function setMode(m){var d=deal();d.mode=m;save();sens={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};stressOn=null;render();}
 function newDeal(){var n=prompt('Name this property (e.g. 12 Example Street):','');if(n===null)return;var d=defDeal();d.name=(n&&n.trim())||('Property '+(store.deals.length+1));d.address=d.name;d.status='testing';store.deals.push(d);store.current=d.id;save();curTab='purchase';view='deal';render();window.scrollTo(0,0);}
