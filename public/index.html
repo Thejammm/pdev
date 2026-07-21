@@ -235,7 +235,7 @@ function lsSet(k,v){try{if(HAS_LS)localStorage.setItem(k,v);else MEM[k]=v;}catch
 var KEY='pdevPro_v1';var store={deals:[],current:null};
 function load(){var r=lsGet(KEY);if(r){try{store=JSON.parse(r);}catch(e){}}if(!store.deals)store.deals=[];
   if(!store.borrow)store.borrow={amount:165000,monthly:914,on:false};
-  if(!store.cmpRows)store.cmpRows=['purchase','gdv','cash','potleft','headline','monthly','mortgage','return','mao','score'];
+  if(!store.cmpRows)store.cmpRows=['purchase','gdv','cash','potleft','headline','monthly','mortgage','return','score'];
   if(!store.cmpMig){var ci=store.cmpRows.indexOf('cash');if(store.cmpRows.indexOf('potleft')<0)store.cmpRows.splice(ci>=0?ci+1:store.cmpRows.length,0,'potleft');store.cmpMig=1;}
   if(!store.cmpMig2){if(store.cmpRows.indexOf('mortgage')<0){var mi=store.cmpRows.indexOf('monthly');store.cmpRows.splice(mi>=0?mi+1:store.cmpRows.length,0,'mortgage');}store.cmpMig2=1;}
   store.deals.forEach(d=>{if(!d.status)d.status='saved';});
@@ -380,7 +380,7 @@ function renderDash(){
   if(counts[dashFilter]===0){dashFilter=counts.saved?'saved':counts.testing?'testing':counts.archived?'archived':'saved';}
   var list=store.deals.filter(d=>statusOf(d)===dashFilter);
   var h='<div class="appbar"><div class="ttl">Your properties<span>'+counts.saved+' saved · '+counts.testing+' in progress</span></div>'+
-    '<div class="menu"><button class="ic" onclick="toggleMenu(event)">···</button><div class="menu-pop" id="menuPop"><button onclick="exportJSON()">Download backup</button><button onclick="document.getElementById(\'imp\').click()">Restore backup</button></div><input type="file" id="imp" accept="application/json" style="display:none" onchange="importJSON(event)"></div></div>';
+    '<div class="menu"><button class="ic" onclick="toggleMenu(event)">···</button><div class="menu-pop" id="menuPop"><button onclick="exportJSON()">Download backup (JSON)</button><button onclick="document.getElementById(\'imp\').click()">Import backup (JSON)</button></div><input type="file" id="imp" accept="application/json" style="display:none" onchange="importJSON(event)"></div></div>';
   h+='<div class="dashwrap">'+folioHTML()+'<div class="filters">'+['saved','testing','archived'].map(f=>'<button class="chip'+(dashFilter===f?' on':'')+'" onclick="setFilter(\''+f+'\')">'+({saved:'Saved',testing:'In progress',archived:'Archived'}[f])+' ('+counts[f]+')</button>').join('')+'</div>';
   h+=list.length?list.map(cardHTML).join(''):'<div class="empty">No '+({saved:'saved',testing:'in-progress',archived:'archived'}[dashFilter])+' properties here yet.<br>Tap “New property” to start one.</div>';
   h+='<button class="newbtn" onclick="newDeal()">＋ New property</button>'+(store.deals.filter(d=>statusOf(d)!=='archived').length>=2?'<button class="cmpbtn" onclick="openCompare()">⇄ Compare properties</button>':'')+'</div>';
@@ -462,7 +462,6 @@ var METRICS=[
   {k:'mortgage',label:'Mortgage payment',fn:c=>c.monthlyPay,fmt:v=>money(v)+'/mo',better:'lo'},
   {k:'return',label:'Return on cash',fn:(c,d)=>d.mode==='btl'?c.coc:c.roi,fmt:v=>pct(v),better:'hi'},
   {k:'yield',label:'Gross yield',mode:'btl',fn:c=>c.grossYield,fmt:v=>pct(v),better:'hi'},
-  {k:'mao',label:'Max offer',fn:c=>c.mao,fmt:v=>money(v),better:'hi'},
   {k:'score',label:'Deal score',fn:c=>healthScores(c).overall,fmt:v=>v+'/100',better:'hi'},
   {k:'equity',label:'Equity created',mode:'btl',fn:c=>c.equity,fmt:v=>money(v),better:'hi'},
   {k:'pullout',label:'Refinance pull-out',mode:'btl',fn:c=>c.refiRelease,fmt:v=>money(v),better:'hi'},
@@ -476,7 +475,7 @@ var METRICS=[
 function toggleCmpSettings(){cmpSettingsOpen=!cmpSettingsOpen;renderCompare();}
 function toggleCmpRow(k){var i=store.cmpRows.indexOf(k);if(i>=0)store.cmpRows.splice(i,1);else store.cmpRows.push(k);save();renderCompare();}
 function cmpSettingsHTML(){return '<div class="cmpset"><div class="cmpset-h">Choose what to compare</div>'+METRICS.map(mt=>'<label class="cmprow"><input type="checkbox" '+(store.cmpRows.indexOf(mt.k)>=0?'checked':'')+' onchange="toggleCmpRow(\''+mt.k+'\')"><span>'+mt.label+'</span></label>').join('')+'</div>';}
-var METRIC_TAB={purchase:'purchase',gdv:'purchase',cash:'summary',potleft:'summary',headline:'summary',monthly:'summary',mortgage:'finance',return:'summary',yield:'summary',mao:'summary',score:'summary',equity:'summary',pullout:'scorecard',capleft:'scorecard',ppm2:'purchase',stamp:'costs',deposit:'finance',refurb:'costs',breakeven:'scorecard'};
+var METRIC_TAB={purchase:'purchase',gdv:'purchase',cash:'summary',potleft:'summary',headline:'summary',monthly:'summary',mortgage:'finance',return:'summary',yield:'summary',score:'summary',equity:'summary',pullout:'scorecard',capleft:'scorecard',ppm2:'purchase',stamp:'costs',deposit:'finance',refurb:'costs',breakeven:'scorecard'};
 function drillTo(id,tab){store.current=id;view='deal';curTab=tab||'summary';sens={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};stressOn=null;render();window.scrollTo(0,0);}
 function exportComparePDF(){
   var nonArch=store.deals.filter(d=>statusOf(d)!=='archived');
@@ -509,7 +508,7 @@ function compareTable(sel){
 function renderDeal(){var d=deal();if(!d){goDash();return;}
   var h='<div class="appbar"><button class="ic" onclick="goDash()">‹ Properties</button>'+
     '<div class="ttl dealname" onclick="renameDeal()" style="flex:1;text-align:center;margin:0 8px">'+esc(d.name||'Untitled')+'<span>'+(d.mode==='btl'?'Buy to Let':'Flip')+' · '+statusOf(d)+' · tap to rename</span></div>'+
-    '<div class="menu"><button class="ic" onclick="toggleMenu(event)">···</button><div class="menu-pop" id="menuPop"><button onclick="dupCard(store.current)">Duplicate this property</button><button onclick="exportPDF()">Export PDF</button><button onclick="exportJSON()">Backup</button><button onclick="document.getElementById(\'imp\').click()">Restore</button></div><input type="file" id="imp" accept="application/json" style="display:none" onchange="importJSON(event)"></div></div>';
+    '<div class="menu"><button class="ic" onclick="toggleMenu(event)">···</button><div class="menu-pop" id="menuPop"><button onclick="dupCard(store.current)">Duplicate this property</button><button onclick="exportPDF()">Export PDF</button><button onclick="exportJSON()">Download backup (JSON)</button><button onclick="document.getElementById(\'imp\').click()">Import backup (JSON)</button></div><input type="file" id="imp" accept="application/json" style="display:none" onchange="importJSON(event)"></div></div>';
   h+='<div class="controls"><div class="seg" id="modeSeg"><button data-m="flip" onclick="setMode(\'flip\')">Flip</button><button data-m="btl" onclick="setMode(\'btl\')">Buy to Let</button></div>'+
     '<button class="mini save" onclick="setStatus(\'saved\')">✓ Save</button><button class="mini" onclick="setStatus(\'archived\')">Archive</button><button class="mini del" onclick="delDeal()">Delete</button></div>';
   h+='<div class="stick"><div class="summary" id="summary"></div><div class="tabs" id="tabs"></div></div><div class="tabc" id="tabc"></div>';
@@ -593,8 +592,6 @@ function summaryTab(c,d){var isB=c.isBtl,s=healthScores(c),col=s.overall>=70?'gr
   if(isB)h+='<h2 class="sec">Rent vs mortgage — every month</h2><div class="kv">'+O('Rent received',money(c.rentM),'','','The monthly rent you expect once done up.')+O('Mortgage payment','−'+money(c.monthlyPay),'neg','','Your monthly mortgage payment on this property.')+O('Running costs','−'+money(c.opMonthly),'neg','','Management, maintenance, void allowance, insurance, gas, electrical, licensing, ground rent and service charge.')+O('Net cash flow',money(c.netCF),c.netCF>=0?'pos':'neg',true,'Rent − mortgage − running costs. This is what you actually keep each month.')+'</div>';
   h+='<h2 class="sec">Where the money goes</h2><div class="kv">'+O('Purchase price',money(c.pp))+O('Acquisition',money(c.acqTotal),'','','Stamp duty + solicitor + searches + survey + land registry + other.')+O('Refurbishment',money(c.refurb),'','','All refurbishment lines + contingency.')+O('Finance',money(c.financeCosts),'','','Fees + interest over the whole project.')+O('Holding',money(c.holdTotNonMort),'','','Monthly holding (excl. mortgage) × months.')+(isB?'':O('Selling',money(c.sellTotal),'','','Agent fee + solicitor + EPC + marketing + staging + other.'))+O('Total project cost',money(c.totalProjectCost),'',true,'Purchase + acquisition + refurbishment + finance + holding'+(isB?'.':' + selling.'))+'</div>';
   h+='<h2 class="sec">Returns</h2><div class="kv">'+(isB?O('Annual cash flow',money(c.annualCF),c.annualCF>=0?'pos':'neg',true,'Monthly net cash flow × 12.')+O('Cash-on-cash',pct(c.coc),'','','Annual cash flow ÷ total cash invested.')+O('Gross / net yield',pct(c.grossYield)+' / '+pct(c.netYield),'','','Gross: annual rent ÷ price. Net: income after operating costs ÷ money in.')+O('Equity created',money(c.equity),'','','End value − the new mortgage after you refinance.')+O('Capital left in',money(c.capitalLeftIn),'','','Cash invested − cash released when you refinance.')+O('Return on cash left in',pct(c.cocLeftIn),'','','Annual cash flow ÷ the capital still left in the deal.'):O('Expected profit',money(c.profit),c.profit>=0?'pos':'neg',true,'End value (GDV) − total project cost.')+O('ROI',pct(c.roi),'','','Profit ÷ total cash invested.')+O('ROCE',pct(c.roce),'','','Profit ÷ total project cost.')+O('Profit / month',money(c.profitPM),'','','Profit ÷ project months.')+O('Profit margin (on GDV)',pct(c.margin),'','','Profit ÷ end value.')+O('Break-even sale',money(c.breakEven),'','','The sale price where profit is exactly zero, allowing for the agent’s %.'))+O('Total cash needed',money(c.cashInvested),'','','Deposit + acquisition + finance fees + refurbishment + holding (excl. mortgage).')+'</div>';
-  h+='<h2 class="sec">Maximum offer</h2><div class="kv"><div class="hint">The most you should offer to still hit your target '+(isB?'yield.':'profit.')+'</div>'+O('Maximum offer price',money(c.mao),'',true,isB?'Annual rent ÷ your target yield.':'End value − target profit − refurb − selling − holding − finance − acquisition.')+
-    '<div class="fw"><div class="fld"><div class="l">Target '+(isB?'gross yield':'profit')+iBtn({tip:isB?'Your minimum acceptable gross yield.':'The profit you want this deal to make.'})+'</div><div class="affix">'+(isB?'':'<span class="u">£</span>')+'<input class="inp" style="width:100px" inputmode="decimal" value="'+esc(isB?d.targetYield:d.targetProfit)+'" oninput="upd(\''+(isB?'targetYield':'targetProfit')+'\',this.value)">'+(isB?'<span class="u">%</span>':'')+'</div></div><div class="fh" style="display:none">'+(isB?'Your minimum acceptable gross yield.':'The profit you want this deal to make.')+'</div></div></div>';
   return h;
 }
 function scorecardTab(c,d){
@@ -682,7 +679,7 @@ function repaint(){var d=deal(),active=sensActive(),c=calc(d,ov());
   var big=isB?c.annualCF:c.profit,lab=isB?'Expected annual cash flow':'Expected profit';
   var sm=document.getElementById('summary');if(sm){sm.className='summary '+d.mode;
   sm.innerHTML='<div class="top"><div><div class="lab">'+lab+'</div><div class="big '+(big>=0?'pos':'neg')+'">'+money(big)+'</div></div><div style="text-align:right"><span class="modetag '+d.mode+'">'+(isB?'BUY TO LET':'FLIP')+'</span><div style="margin-top:7px"><span class="pill '+band+'">'+(band==='green'?'Strong':band==='amber'?'Marginal':'Poor')+' · '+s.overall+'</span></div></div></div>'+
-    '<div class="mini">'+(isB?'Rent <b>'+money(c.rentM)+'</b> · Mortgage <b>'+money(c.monthlyPay)+'</b> · Net <b>'+money(c.netCF)+'/mo</b>':'ROI <b>'+pct(c.roi)+'</b> · Cash <b>'+money(c.cashInvested)+'</b> · Max offer <b>'+money(c.mao)+'</b>')+'</div>'+
+    '<div class="mini">'+(isB?'Rent <b>'+money(c.rentM)+'</b> · Mortgage <b>'+money(c.monthlyPay)+'</b> · Net <b>'+money(c.netCF)+'/mo</b>':'ROI <b>'+pct(c.roi)+'</b> · Cash <b>'+money(c.cashInvested)+'</b>')+'</div>'+
     (active?'<div class="scen" onclick="resetSens()"><span>⚠ What-if scenario applied</span><span>Reset ✕</span></div>':'');}
   GROUPS.forEach(g=>{var el=document.getElementById('det-'+g.id);if(el)el.innerHTML=detFor(g.id,c);});
   var lh=document.getElementById('ltvHelp');if(lh)lh.innerHTML=ltvHelp(d);
@@ -717,7 +714,15 @@ function delDeal(){if(!confirm('Delete this property for good?'))return;store.de
 function toggleMenu(e){e.stopPropagation();document.getElementById('menuPop').classList.toggle('open');}
 document.addEventListener('click',()=>{var m=document.getElementById('menuPop');if(m)m.classList.remove('open');});
 function exportJSON(){var b=new Blob([JSON.stringify(store,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='propdev-appraisals.json';a.click();}
-function importJSON(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(d.deals){store=d;if(!store.current)store.current=store.deals[0].id;save();render();}else alert('Not a valid backup.');}catch(err){alert('Could not read file.');}};r.readAsText(f);e.target.value='';}
+function importJSON(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(!d||!Array.isArray(d.deals)){alert('That is not a valid PropDev backup file.');return;}
+  if(!store.deals)store.deals=[];
+  var have={};store.deals.forEach(function(x){have[x.id]=x;});
+  var added=0,updated=0;
+  d.deals.forEach(function(nd){if(!nd||typeof nd!=='object')return;if(!nd.id)nd.id=uid();if(have[nd.id]){store.deals[store.deals.indexOf(have[nd.id])]=nd;updated++;}else{store.deals.push(nd);have[nd.id]=nd;added++;}});
+  if(!store.current&&store.deals.length)store.current=store.deals[0].id;
+  save();render();
+  toast(added+' propert'+(added===1?'y':'ies')+' imported'+(updated?', '+updated+' updated':''));
+}catch(err){alert('Could not read that file.');}};r.readAsText(f);e.target.value='';}
 function pdfText(s){return String(s==null?'':s).replace(/[−–—]/g,'-').replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/∞/g,'inf').replace(/[▲▼·→]/g,'-').replace(/[^\x00-\xFF]/g,'?');}
 function pdfEsc(s){return s.replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)').replace(/[\r\n]/g,' ');}
 function pdfW(s,size){var W={' ':278,',':278,'.':278,'-':333,'%':889,'/':278,'£':556,':':278,'(':333,')':333};var w=0;for(var i=0;i<s.length;i++){var ch=s[i];w+=W[ch]!=null?W[ch]:(ch>='0'&&ch<='9')?556:(ch>='A'&&ch<='Z')?667:500;}return w*size/1000;}
@@ -741,7 +746,7 @@ function makePDF(fname,title,subtitle,sections){var pw=595,ph=842,mL=50,mR=545,t
 function exportPDF(){var d=deal(),c=calc(d),isB=c.isBtl;
   var gp=num(d.growthPct)||5,g=gp/100,base=num(d.gdv)||num(d.marketValue)||c.pp;
   var secs=[];
-  secs.push({h:'Headline',rows:[['Deal score',healthScores(c).overall+' / 100',true],[isB?'Net cash flow / mo':'Expected profit',isB?money(c.netCF):money(c.profit),true],[isB?'Annual cash flow':'Profit margin (on GDV)',isB?money(c.annualCF):pct(c.margin)],[isB?'Gross yield':'Return on cash (ROI)',isB?pct(c.grossYield):pct(c.roi)],['Total cash needed',money(c.cashInvested)],['Maximum offer price',money(c.mao),true],isB?['Cash-on-cash return',pct(c.coc)]:['Break-even sale',money(c.breakEven)]]});
+  secs.push({h:'Headline',rows:[['Deal score',healthScores(c).overall+' / 100',true],[isB?'Net cash flow / mo':'Expected profit',isB?money(c.netCF):money(c.profit),true],[isB?'Annual cash flow':'Profit margin (on GDV)',isB?money(c.annualCF):pct(c.margin)],[isB?'Gross yield':'Return on cash (ROI)',isB?pct(c.grossYield):pct(c.roi)],['Total cash needed',money(c.cashInvested)],isB?['Cash-on-cash return',pct(c.coc)]:['Break-even sale',money(c.breakEven)]]});
   secs.push({h:'The purchase',rows:[['Address',d.address||'-'],['Purchase price',money(c.pp)],['Market value (as-is)',money(num(d.marketValue))],['End value / GDV',money(c.gdv)],['Discount below market value',pct(c.discount)],['Your deposit ('+num(d.depositPct)+'%)',money(c.deposit)],['Mortgage / loan',money(c.mortgage)],['Loan to value (LTV)',pct(c.ltv)],['Floor area',num(d.floorArea)+' m2'],['Price per m2',money(c.ppm2)]]});
   if(isB){
     secs.push({h:'Rent vs mortgage - every month',rows:[['Rent received',money(c.rentM)],['Mortgage payment',money(c.monthlyPay)],['Running costs',money(c.opMonthly)],['Net cash flow',money(c.netCF),true],['Annual cash flow',money(c.annualCF)]]});
