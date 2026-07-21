@@ -460,12 +460,18 @@ function cmpSettingsHTML(){return '<div class="cmpset"><div class="cmpset-h">Cho
 var METRIC_TAB={purchase:'purchase',gdv:'purchase',cash:'summary',potleft:'summary',headline:'summary',monthly:'summary',return:'summary',yield:'summary',mao:'summary',score:'summary',equity:'summary',pullout:'scorecard',capleft:'scorecard',ppm2:'purchase',stamp:'costs',deposit:'finance',refurb:'costs',breakeven:'scorecard'};
 function drillTo(id,tab){store.current=id;view='deal';curTab=tab||'summary';sens={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};stressOn=null;render();window.scrollTo(0,0);}
 function exportComparePDF(){
-  var sel=compareSel.map(id=>store.deals.find(x=>x.id===id)).filter(Boolean).slice(0,3);
-  if(sel.length<2){alert('Pick at least two properties to compare.');return;}
-  var cs=sel.map(d=>({d:d,c:calc(d)})),rows=METRICS.filter(mt=>store.cmpRows.indexOf(mt.k)>=0);
-  var cols=cs.map(x=>(x.d.mode==='btl'?'BTL ':'FLIP ')+String(x.d.name||'Untitled').slice(0,16));
-  var body=rows.map(mt=>{var r=[mt.label];cs.forEach(x=>{if(mt.mode&&x.d.mode!==mt.mode){r.push('-');}else{var v=mt.fn(x.c,x.d);r.push(String(mt.fmt(v,x)).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim());}});return r;});
-  makePDF('property-comparison.pdf','Property comparison',sel.length+' properties - prepared '+today(),[{h:'Side by side',cols:cols,rows:body}]);
+  var nonArch=store.deals.filter(d=>statusOf(d)!=='archived');
+  var ordered=compareSel.map(id=>nonArch.find(d=>d.id===id)).filter(Boolean).concat(nonArch.filter(d=>compareSel.indexOf(d.id)<0));
+  if(ordered.length<2){alert('Add at least two properties to compare.');return;}
+  var rows=METRICS.filter(mt=>store.cmpRows.indexOf(mt.k)>=0),secs=[];
+  for(var g=0;g<ordered.length;g+=3){
+    var group=ordered.slice(g,g+3),cs=group.map(d=>({d:d,c:calc(d)}));
+    var cols=cs.map(x=>(x.d.mode==='btl'?'BTL ':'FLIP ')+String(x.d.name||'Untitled').slice(0,16));
+    var body=rows.map(mt=>{var r=[mt.label];cs.forEach(x=>{if(mt.mode&&x.d.mode!==mt.mode){r.push('-');}else{var v=mt.fn(x.c,x.d);r.push(String(mt.fmt(v,x)).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim());}});return r;});
+    var label=ordered.length<=3?'Side by side':(group.length>1?('Properties '+(g+1)+'-'+(g+group.length)):('Property '+(g+1)));
+    secs.push({h:label,cols:cols,rows:body});
+  }
+  makePDF('property-comparison.pdf','Property comparison',ordered.length+' properties - prepared '+today(),secs);
 }
 function compareTable(sel){
   var cs=sel.map(d=>({d:d,c:calc(d)}));
