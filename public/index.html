@@ -7,7 +7,7 @@
 <style>
   :root{
     --ink:#1c2433;--muted:#7a8290;--faint:#aab2bf;--line:#eceef3;--bg:#f4f6fa;--card:#fff;
-    --navy:#1f3864;--navy2:#33589a;--accent:#2e5ba8;
+    --navy:#1f3864;--navy2:#33589a;--accent:#2e5ba8;--flip:#a35a12;--flipbg:#fbf1e2;--btl:#12705e;--btlbg:#e4f4ef;
     --green:#1f7a52;--greenbg:#eaf5ee;--red:#b23b3b;--redbg:#fbeceb;--amber:#8a5d00;--amberbg:#fdf4de;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -116,6 +116,24 @@
   .mini.save{background:var(--greenbg);color:var(--green);border-color:#cfe8d8}
   .mini.del{background:var(--redbg);color:var(--red);border-color:#f0cccc}
   .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:#182031;color:#fff;padding:11px 18px;border-radius:22px;font-size:14px;font-weight:700;z-index:200;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+  /* mode colours */
+  .seg button[data-m="flip"].on{background:var(--flip);color:#fff} .seg button[data-m="btl"].on{background:var(--btl);color:#fff}
+  .summary.flip{border-left:5px solid var(--flip)} .summary.btl{border-left:5px solid var(--btl)}
+  .modetag{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;letter-spacing:.3px}
+  .modetag.flip{background:var(--flipbg);color:var(--flip)} .modetag.btl{background:var(--btlbg);color:var(--btl)}
+  .pcard.flip{border-left:5px solid var(--flip)} .pcard.btl{border-left:5px solid var(--btl)}
+  .pcard.flip .cardtog button.on{background:var(--flip);color:#fff} .pcard.btl .cardtog button.on{background:var(--btl);color:#fff}
+  .tabs button.on.flip{background:var(--flip)} .tabs button.on.btl{background:var(--btl)}
+  /* collapsible group */
+  .ghead{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:13px 2px;font-size:14px;font-weight:700}
+  .ghead .gcx{color:#aab2c0;font-weight:800;transition:transform .15s}
+  .grp.open .ghead .gcx{transform:rotate(90deg)}
+  .gbody{display:none} .grp.open .gbody{display:block}
+  /* tooltips */
+  .i{display:inline-flex;width:16px;height:16px;border-radius:50%;background:#e2e7f0;color:#556;font-size:10px;font-weight:800;align-items:center;justify-content:center;cursor:pointer;margin-left:6px;vertical-align:middle;border:none;font-style:normal}
+  .i:active{background:#ccd4e0}
+  .fh{font-size:11.5px;color:#57606e;background:#f4f7fb;border-radius:8px;padding:7px 10px;margin:0 0 9px;line-height:1.45}
+  .scen{display:flex;justify-content:space-between;align-items:center;background:var(--amberbg);color:var(--amber);border-radius:9px;padding:7px 11px;font-size:11.5px;font-weight:800;margin-top:9px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -187,75 +205,75 @@ function F(k,label,type,unit,tip,cls){return{k,label,type:type||'money',unit:(un
 var TYPES=['Terraced house','Semi-detached','Detached','Flat','Bungalow','HMO','Commercial'];
 var GROUPS=[
  {id:'purchase',tab:'purchase',t:'Property & price',modes:'both',fields:[
-   F('address','Property address','text','',''),
+   F('address','Property address','text','','The property address. Pre-filled with the name you gave it — edit if you like.'),
    F('postcode','Postcode','text','','Type a postcode to open the area in Google Maps.'),
-   F('purchasePrice','Purchase price','money','£','What you actually pay for the property.',['Yes','Variable','High',true]),
-   F('offerPrice','Offer price','money','£','Compare this with the max offer in the summary.',['Yes','Variable','Medium',true]),
-   F('marketValue','Market value (as-is)','money','£','Current value before works.',['No','Estimated','Medium',false]),
-   F('gdv','End value / GDV','money','£','Resale price (flip) or valuation for refinance (BTL).',['No','Estimated','High',false]),
-   F('monthlyRent','Monthly rent','money','£','Achievable rent once done up.',['No','Estimated','Medium',false]),
-   F('propertyType','Property type','select','',''),
-   F('floorArea','Floor area','num','m²','Drives the £/m² figures.',['No','Estimated','Low']),
-   F('bedrooms','Bedrooms','num','',''),F('bathrooms','Bathrooms','num','','')]},
+   F('purchasePrice','Purchase price','money','£','What you actually pay for the property — the figure the deal is built on.',['Yes','Variable','High',true]),
+   F('offerPrice','Offer price','money','£','What you plan to offer. Compare it with the maximum offer in the summary.',['Yes','Variable','Medium',true]),
+   F('marketValue','Market value (as-is)','money','£','What the property is worth today, before any work — used for the discount figure.',['No','Estimated','Medium',false]),
+   F('gdv','End value / GDV','money','£','Gross Development Value: the resale price once done up (flip), or the valuation you refinance against (BTL).',['No','Estimated','High',false]),
+   F('monthlyRent','Monthly rent','money','£','The rent you expect to achieve once the property is done up.',['No','Estimated','Medium',false]),
+   F('propertyType','Property type','select','','The kind of property — for your own reference and comparables.'),
+   F('floorArea','Floor area','num','m²','Internal floor area in square metres. Drives the £/m² figures.',['No','Estimated','Low']),
+   F('bedrooms','Bedrooms','num','','Number of bedrooms.'),F('bathrooms','Bathrooms','num','','Number of bathrooms.')]},
  {id:'finance',tab:'finance',t:'Finance',modes:'both',fields:[
-   F('mortgageType','Mortgage type','select','','BTL, short-term Bridging, or Cash.',['Yes','Fixed','Medium',true]),
-   F('mortgageBasis','Basis','select','','Interest-only keeps payments low; Repayment pays down the loan.',['Yes','Fixed','Low',true]),
-   F('depositPct','Deposit','pctdep','%','Your cash deposit — % and £ stay linked.',['Yes','Variable','Medium',true]),
-   F('interestRate','Interest rate','num','%','Annual rate. Bridging is quoted per month — enter the annual equivalent.',['No','Variable','High',false]),
-   F('termYears','Term','num','yrs','Loan term in years (for repayment amortisation).',['Yes','Fixed','Low',true]),
-   F('arrangeFeePct','Arrangement fee','num','%','% of the loan.',['No','Fixed','Low',false]),
-   F('brokerFee','Broker fee','money','£','',['Yes','Fixed','Low',true]),
-   F('valuationFee','Valuation fee','money','£','',['No','Fixed','Low',false]),
-   F('refiLTV','Refinance LTV','num','%','BTL only — new loan as % of GDV when you refinance.',['Yes','Estimated','Medium',true])]},
+   F('mortgageType','Mortgage type','select','','BTL mortgage, short-term Bridging, or Cash (no borrowing).',['Yes','Fixed','Medium',true]),
+   F('mortgageBasis','Basis','select','','Interest-only keeps monthly payments low; Repayment also pays down the loan.',['Yes','Fixed','Low',true]),
+   F('depositPct','Deposit','pctdep','%','Your cash deposit. The % and the £ amount stay linked — change either.',['Yes','Variable','Medium',true]),
+   F('interestRate','Interest rate','num','%','Annual interest rate. Bridging is usually quoted per month — enter the annual equivalent (e.g. 0.9%/mo ≈ 11%).',['No','Variable','High',false]),
+   F('termYears','Term','num','yrs','Loan term in years — used to work out repayment amortisation.',['Yes','Fixed','Low',true]),
+   F('arrangeFeePct','Arrangement fee','num','%','Lender arrangement fee, as a % of the loan.',['No','Fixed','Low',false]),
+   F('brokerFee','Broker fee','money','£','Flat fee your mortgage broker charges.',['Yes','Fixed','Low',true]),
+   F('valuationFee','Valuation fee','money','£','The lender’s valuation / survey fee.',['No','Fixed','Low',false]),
+   F('refiLTV','Refinance LTV','num','%','BTL only — the new loan as a % of GDV when you refinance to pull cash back out.',['Yes','Estimated','Medium',true])]},
  {id:'rental',tab:'finance',t:'Rental income & costs',modes:'btl',fields:[
-   F('managementPct','Management','num','%','Letting agent fee as % of rent.',['Yes','Fixed','Low',true]),
-   F('maintenancePct','Maintenance','num','%','Repairs allowance as % of rent.',['Yes','Estimated','Medium',true]),
-   F('voidPct','Void allowance','num','%','Expected empty periods as % of rent.',['No','Estimated','Medium',false]),
-   F('rentInsurance','Insurance (yr)','money','£','',['Yes','Fixed','Low',true]),
-   F('gasSafety','Gas safety (yr)','money','£','',['No','Fixed','Low',false]),
-   F('electricalInspection','Electrical (yr)','money','£','EICR, annualised.',['No','Fixed','Low',false]),
-   F('licensing','Licensing (yr)','money','£','HMO / selective licence.',['No','Fixed','Medium',false]),
-   F('groundRent','Ground rent (yr)','money','£','',['No','Fixed','Low',false]),
-   F('serviceCharge','Service charge (yr)','money','£','',['No','Fixed','Medium',false]),
-   F('rentOther','Other (yr)','money','£','',['Yes','Estimated','Low',true])]},
+   F('managementPct','Management','num','%','Letting agent’s management fee, as a % of the rent.',['Yes','Fixed','Low',true]),
+   F('maintenancePct','Maintenance','num','%','Allowance for repairs and upkeep, as a % of the rent.',['Yes','Estimated','Medium',true]),
+   F('voidPct','Void allowance','num','%','Allowance for empty periods between tenants, as a % of the rent.',['No','Estimated','Medium',false]),
+   F('rentInsurance','Insurance (yr)','money','£','Annual landlord / buildings insurance.',['Yes','Fixed','Low',true]),
+   F('gasSafety','Gas safety (yr)','money','£','Annual gas safety certificate (CP12).',['No','Fixed','Low',false]),
+   F('electricalInspection','Electrical (yr)','money','£','EICR electrical check, spread to a yearly figure.',['No','Fixed','Low',false]),
+   F('licensing','Licensing (yr)','money','£','HMO or selective licence cost, spread to a yearly figure.',['No','Fixed','Medium',false]),
+   F('groundRent','Ground rent (yr)','money','£','Annual ground rent (leasehold).',['No','Fixed','Low',false]),
+   F('serviceCharge','Service charge (yr)','money','£','Annual service charge (leasehold / managed blocks).',['No','Fixed','Medium',false]),
+   F('rentOther','Other (yr)','money','£','Any other yearly running cost not listed above.',['Yes','Estimated','Low',true])]},
  {id:'acq',tab:'costs',t:'Acquisition',modes:'both',fields:[
-   F('solicitorAcq','Solicitor','money','£','',['Yes','Estimated','Low',true]),
-   F('searches','Searches','money','£','Set by third parties.',['No','Fixed','Low',false]),
-   F('survey','Survey','money','£','',['Yes','Estimated','Low',true]),
-   F('landRegistry','Land Registry','money','£','Statutory fee.',['No','Fixed','Low',false]),
-   F('mortgageFeesAcq','Mortgage fees (other)','money','£','Not already in Finance.',['No','Estimated','Low',false]),
-   F('otherAcq','Other','money','£','',['Yes','Estimated','Medium',true])]},
+   F('solicitorAcq','Solicitor','money','£','Conveyancing solicitor’s fee for the purchase.',['Yes','Estimated','Low',true]),
+   F('searches','Searches','money','£','Local authority and other searches — set by third parties.',['No','Fixed','Low',false]),
+   F('survey','Survey','money','£','Building survey or homebuyer report before you commit.',['Yes','Estimated','Low',true]),
+   F('landRegistry','Land Registry','money','£','Statutory fee to register the property in your name.',['No','Fixed','Low',false]),
+   F('mortgageFeesAcq','Mortgage fees (other)','money','£','Any mortgage-related fee not already entered in the Finance section.',['No','Estimated','Low',false]),
+   F('otherAcq','Other','money','£','Any other one-off purchase cost.',['Yes','Estimated','Medium',true])]},
  {id:'refurb',tab:'costs',t:'Refurbishment',modes:'both',fields:[
-   F('r_kitchen','Kitchen','money','£','',['Yes','Estimated','Medium',true]),
-   F('r_bathroom','Bathroom','money','£','',['Yes','Estimated','Medium',true]),
-   F('r_electrical','Electrical','money','£','',['Yes','Estimated','High',true]),
-   F('r_plumbing','Plumbing','money','£','',['Yes','Estimated','High',true]),
-   F('r_heating','Heating','money','£','',['Yes','Estimated','Medium',true]),
-   F('r_roof','Roof','money','£','Often the biggest surprise — high risk.',['Yes','Estimated','High',true]),
-   F('r_windows','Windows','money','£','',['Yes','Estimated','Medium',true]),
-   F('r_decoration','Decoration','money','£','',['Yes','Estimated','Low',true]),
-   F('r_flooring','Flooring','money','£','',['Yes','Estimated','Low',true]),
-   F('r_external','External works','money','£','',['Yes','Estimated','Medium',true]),
-   F('r_garden','Garden','money','£','',['Yes','Estimated','Low',true]),
-   F('r_waste','Waste removal','money','£','',['Yes','Estimated','Low',true]),
-   F('r_professional','Professional fees','money','£','Architect, planning, building control, PM.',['Yes','Estimated','Medium',true]),
-   F('contingencyPct','Contingency','num','%','Buffer for the unknowns, % of refurb. 10–15% is prudent.',['Yes','Estimated','High',true])]},
+   F('r_kitchen','Kitchen','money','£','Cost to supply and fit the kitchen.',['Yes','Estimated','Medium',true]),
+   F('r_bathroom','Bathroom','money','£','Cost to refit the bathroom(s).',['Yes','Estimated','Medium',true]),
+   F('r_electrical','Electrical','money','£','Rewire / electrical work. Easy to under-estimate — treat as high risk.',['Yes','Estimated','High',true]),
+   F('r_plumbing','Plumbing','money','£','Plumbing and drainage work.',['Yes','Estimated','High',true]),
+   F('r_heating','Heating','money','£','Boiler, radiators and heating system.',['Yes','Estimated','Medium',true]),
+   F('r_roof','Roof','money','£','Roof and guttering. Often the biggest surprise cost — high risk.',['Yes','Estimated','High',true]),
+   F('r_windows','Windows','money','£','New windows and external doors.',['Yes','Estimated','Medium',true]),
+   F('r_decoration','Decoration','money','£','Plastering and painting throughout.',['Yes','Estimated','Low',true]),
+   F('r_flooring','Flooring','money','£','Carpets, flooring and floor coverings.',['Yes','Estimated','Low',true]),
+   F('r_external','External works','money','£','Rendering, brickwork, driveways and other outside work.',['Yes','Estimated','Medium',true]),
+   F('r_garden','Garden','money','£','Garden and landscaping.',['Yes','Estimated','Low',true]),
+   F('r_waste','Waste removal','money','£','Skips and clearance of the old property.',['Yes','Estimated','Low',true]),
+   F('r_professional','Professional fees','money','£','Architect, planning, building control and project management fees.',['Yes','Estimated','Medium',true]),
+   F('contingencyPct','Contingency','num','%','A buffer for the unknowns, added as a % of the refurb subtotal. 10–15% is prudent.',['Yes','Estimated','High',true])]},
  {id:'holding',tab:'costs',t:'Holding (monthly)',modes:'both',fields:[
-   F('h_insurance','Insurance','money','£','',['Yes','Fixed','Low',true]),
-   F('h_utilities','Utilities','money','£','',['Yes','Variable','Low',true]),
-   F('h_councilTax','Council tax','money','£','',['No','Fixed','Low',false]),
-   F('h_security','Security','money','£','',['Yes','Variable','Medium',true]),
-   F('h_storage','Storage','money','£','',['Yes','Variable','Low',true]),
-   F('h_site','Site costs','money','£','',['Yes','Variable','Medium',true]),
-   F('h_other','Other','money','£','',['Yes','Variable','Medium',true]),
-   F('projectMonths','Project duration','num','mo','How long you hold it — every month adds cost.',['Yes','Estimated','High',true])]},
+   F('h_insurance','Insurance','money','£','Buildings insurance while you hold the property (per month).',['Yes','Fixed','Low',true]),
+   F('h_utilities','Utilities','money','£','Gas, electric and water while you hold it (per month).',['Yes','Variable','Low',true]),
+   F('h_councilTax','Council tax','money','£','Council tax during the works (per month).',['No','Fixed','Low',false]),
+   F('h_security','Security','money','£','Alarms, boarding or site security (per month).',['Yes','Variable','Medium',true]),
+   F('h_storage','Storage','money','£','Storage of materials or belongings (per month).',['Yes','Variable','Low',true]),
+   F('h_site','Site costs','money','£','Scaffolding, welfare, plant hire and other site running costs (per month).',['Yes','Variable','Medium',true]),
+   F('h_other','Other','money','£','Any other monthly cost while you hold the property.',['Yes','Variable','Medium',true]),
+   F('projectMonths','Project duration','num','mo','How many months you hold the property. Every extra month adds finance and holding cost.',['Yes','Estimated','High',true])]},
  {id:'selling',tab:'costs',t:'Selling',modes:'flip',fields:[
-   F('agentPct','Estate agent','num','%','% of GDV.',['Yes','Fixed','Low',true]),
-   F('sellSolicitor','Solicitor','money','£','',['Yes','Estimated','Low',true]),
-   F('epc','EPC','money','£','',['No','Fixed','Low',false]),
-   F('marketing','Marketing','money','£','',['Yes','Variable','Low',true]),
-   F('staging','Staging','money','£','',['Yes','Variable','Low',true]),
-   F('sellOther','Other','money','£','',['Yes','Estimated','Low',true])]}
+   F('agentPct','Estate agent','num','%','Estate agent’s selling fee, as a % of the sale price (GDV).',['Yes','Fixed','Low',true]),
+   F('sellSolicitor','Solicitor','money','£','Conveyancing solicitor’s fee for the sale.',['Yes','Estimated','Low',true]),
+   F('epc','EPC','money','£','Energy Performance Certificate for the sale.',['No','Fixed','Low',false]),
+   F('marketing','Marketing','money','£','Photos, floorplans and marketing.',['Yes','Variable','Low',true]),
+   F('staging','Staging','money','£','Dressing / staging the property to sell.',['Yes','Variable','Low',true]),
+   F('sellOther','Other','money','£','Any other cost of selling.',['Yes','Estimated','Low',true])]}
 ];
 var TABS=[['summary','Summary'],['purchase','Purchase'],['costs','Costs'],['finance','Finance'],['risk','Risk']];
 var curTab='summary';
@@ -277,14 +295,14 @@ function renderDash(){
 }
 function cardHTML(d){var c=calc(d),isB=d.mode==='btl',val=isB?c.netCF:c.profit;
   var big=isB?money(c.netCF)+'/mo':money(c.profit),lab=isB?'monthly cash flow':'profit';
-  var meta=(isB?'Buy to Let':'Flip')+' · '+money(c.pp)+(isB?' · '+pct(c.grossYield)+' yield':' · GDV '+money(c.gdv));
-  return '<div class="pcard" onclick="openDeal(\''+d.id+'\')"><div><div class="pcname">'+esc(d.name||'Untitled')+'</div><div class="pcmeta">'+meta+'</div></div>'+
+  var meta='<span class="modetag '+d.mode+'">'+(isB?'BTL':'FLIP')+'</span> '+money(c.pp)+(isB?' · '+pct(c.grossYield)+' yield':' · GDV '+money(c.gdv));
+  return '<div class="pcard '+d.mode+'" onclick="openDeal(\''+d.id+'\')"><div><div class="pcname">'+esc(d.name||'Untitled')+'</div><div class="pcmeta">'+meta+'</div></div>'+
     '<div class="pcright"><div class="cardtog" onclick="event.stopPropagation()"><button class="'+(!isB?'on':'')+'" onclick="cardMode(\''+d.id+'\',\'flip\',event)">Flip</button><button class="'+(isB?'on':'')+'" onclick="cardMode(\''+d.id+'\',\'btl\',event)">BTL</button></div>'+
     '<div class="pcbig '+(val>=0?'pos':'neg')+'">'+big+'</div><div class="pclab">'+lab+'</div></div></div>';
 }
 function cardMode(id,m,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.id===id);if(d){d.mode=m;save();renderDash();}}
 function setFilter(f){dashFilter=f;renderDash();}
-function openDeal(id){store.current=id;view='deal';curTab='summary';render();window.scrollTo(0,0);}
+function openDeal(id){store.current=id;view='deal';curTab='summary';sens={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};stressOn=null;render();window.scrollTo(0,0);}
 function goDash(){view='dash';render();window.scrollTo(0,0);}
 function renderDeal(){var d=deal();if(!d){goDash();return;}
   var h='<div class="appbar"><button class="ic" onclick="goDash()">‹ Properties</button>'+
@@ -295,50 +313,56 @@ function renderDeal(){var d=deal();if(!d){goDash();return;}
   h+='<div class="stick"><div class="summary" id="summary"></div><div class="tabs" id="tabs"></div></div><div class="tabc" id="tabc"></div>';
   document.getElementById('app').innerHTML=h;
   document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on',b.getAttribute('data-m')===d.mode));
-  document.getElementById('tabs').innerHTML=TABS.map(t=>'<button class="'+(curTab===t[0]?'on':'')+'" onclick="setTab(\''+t[0]+'\')">'+t[1]+'</button>').join('');
+  document.getElementById('tabs').innerHTML=TABS.map(t=>'<button class="'+(curTab===t[0]?'on '+d.mode:'')+'" onclick="setTab(\''+t[0]+'\')">'+t[1]+'</button>').join('');
   renderTab();repaint();
 }
 function setStatus(s){var d=deal();d.status=s;save();toast(s==='saved'?'Saved to dashboard':s==='archived'?'Archived':'Updated');if(s==='archived')goDash();else renderDeal();}
 function toast(msg){var t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>{t.style.transition='opacity .4s';t.style.opacity='0';setTimeout(()=>t.remove(),400);},1500);}
 function setTab(t){curTab=t;renderDeal();window.scrollTo(0,0);}
-function q(f){return f.tip?'<span class="q" title="'+esc(f.tip)+'">?</span>':'';}
+function iBtn(f){return f.tip?'<button class="i" type="button" onclick="tipTog(this)">i</button>':'';}
+function tipTog(btn){var w=btn.closest('.fw,.ow');if(!w)return;var fh=w.querySelector('.fh');if(fh)fh.style.display=(fh.style.display==='none'||!fh.style.display)?'block':'none';}
 function fieldHTML(d,f){
-  var v=d[f.k];
-  if(f.k==='postcode'){return '<div class="fld"><div class="l">'+f.label+q(f)+'</div><div class="affix"><input class="inp txt" inputmode="text" value="'+esc(v)+'" oninput="upd(\'postcode\',this.value)"></div></div><div id="mapLink">'+mapLinkHTML(v)+'</div>';}
-  if(f.type==='pctdep'){var pp=num(d.purchasePrice),p=num(d.depositPct),amt=Math.round(pp*p/100);
-    return '<div class="fld"><div class="l">'+f.label+q(f)+'</div><div class="affix"><input id="dPct" class="inp" style="width:62px" inputmode="decimal" value="'+esc(v)+'" oninput="updDep(\'pct\',this.value)"><span class="u">%</span><span class="u">£</span><input id="dAmt" class="inp" style="width:90px" inputmode="decimal" value="'+esc(amt)+'" oninput="updDep(\'amt\',this.value)"></div></div>';}
-  if(f.type==='select'){var opts=f.k==='mortgageType'?[['btl','Buy to Let'],['bridging','Bridging'],['cash','Cash']]:f.k==='mortgageBasis'?[['interest','Interest only'],['repayment','Repayment']]:TYPES.map(t=>[t,t]);
-    return '<div class="fld"><div class="l">'+f.label+q(f)+'</div><select class="inp" oninput="upd(\''+f.k+'\',this.value)">'+opts.map(x=>'<option value="'+x[0]+'"'+(v===x[0]?' selected':'')+'>'+x[1]+'</option>').join('')+'</select></div>';}
-  var isText=f.type==='text',aL=f.unit==='£'?'<span class="u">£</span>':'',aR=(f.unit&&f.unit!=='£')?'<span class="u">'+f.unit+'</span>':'';
-  return '<div class="fld"><div class="l">'+f.label+q(f)+'</div><div class="affix">'+aL+'<input class="inp'+(isText?' txt':'')+'" inputmode="'+(isText?'text':'decimal')+'" value="'+esc(v)+'" oninput="upd(\''+f.k+'\',this.value)">'+aR+'</div></div>';
+  var v=d[f.k],ib=iBtn(f),hint=f.tip?'<div class="fh" style="display:none">'+esc(f.tip)+'</div>':'',body;
+  if(f.k==='postcode'){body='<div class="fld"><div class="l">'+f.label+ib+'</div><div class="affix"><input class="inp txt" inputmode="text" value="'+esc(v)+'" oninput="upd(\'postcode\',this.value)"></div></div><div id="mapLink">'+mapLinkHTML(v)+'</div>';}
+  else if(f.type==='pctdep'){var pp=num(d.purchasePrice),p=num(d.depositPct),amt=Math.round(pp*p/100);
+    body='<div class="fld"><div class="l">'+f.label+ib+'</div><div class="affix"><input id="dPct" class="inp" style="width:62px" inputmode="decimal" value="'+esc(v)+'" oninput="updDep(\'pct\',this.value)"><span class="u">%</span><span class="u">£</span><input id="dAmt" class="inp" style="width:90px" inputmode="decimal" value="'+esc(amt)+'" oninput="updDep(\'amt\',this.value)"></div></div>';}
+  else if(f.type==='select'){var opts=f.k==='mortgageType'?[['btl','Buy to Let'],['bridging','Bridging'],['cash','Cash']]:f.k==='mortgageBasis'?[['interest','Interest only'],['repayment','Repayment']]:TYPES.map(t=>[t,t]);
+    body='<div class="fld"><div class="l">'+f.label+ib+'</div><select class="inp" oninput="upd(\''+f.k+'\',this.value)">'+opts.map(x=>'<option value="'+x[0]+'"'+(v===x[0]?' selected':'')+'>'+x[1]+'</option>').join('')+'</select></div>';}
+  else{var isText=f.type==='text',aL=f.unit==='£'?'<span class="u">£</span>':'',aR=(f.unit&&f.unit!=='£')?'<span class="u">'+f.unit+'</span>':'';
+    body='<div class="fld"><div class="l">'+f.label+ib+'</div><div class="affix">'+aL+'<input class="inp'+(isText?' txt':'')+'" inputmode="'+(isText?'text':'decimal')+'" value="'+esc(v)+'" oninput="upd(\''+f.k+'\',this.value)">'+aR+'</div></div>';}
+  return '<div class="fw">'+body+hint+'</div>';
 }
+var grpOpen={};
 function groupCard(d,g){
-  var det=detOpen[g.id];
-  return '<div class="grp">'+g.fields.map(f=>fieldHTML(d,f)).join('')+
+  var det=detOpen[g.id],open=grpOpen[g.id]!==false;
+  return '<div class="grp '+(open?'open':'closed')+'" id="grp-'+g.id+'"><div class="ghead" onclick="toggleGrp(\''+g.id+'\')"><span>'+g.t+'</span><span class="gcx">›</span></div><div class="gbody">'+
+    g.fields.map(f=>fieldHTML(d,f)).join('')+
     '<div class="det-tog'+(det?' open':'')+'" onclick="toggleDet(\''+g.id+'\')"><span class="cx">›</span>Show figures</div>'+
     '<div class="det'+(det?' open':'')+'" id="det-'+g.id+'"></div>'+
-    '<textarea class="notes" placeholder="Notes…" oninput="updNote(\''+g.id+'\',this.value)">'+esc((d.notes&&d.notes[g.id])||'')+'</textarea></div>';
+    '<textarea class="notes" placeholder="Notes…" oninput="updNote(\''+g.id+'\',this.value)">'+esc((d.notes&&d.notes[g.id])||'')+'</textarea></div></div>';
 }
+function toggleGrp(id){var wasOpen=grpOpen[id]!==false;grpOpen[id]=!wasOpen;var el=document.getElementById('grp-'+id);if(el){el.classList.toggle('open',!wasOpen);el.classList.toggle('closed',wasOpen);}}
 function renderTab(){
-  var d=deal(),c=calc(d),h='';
+  var d=deal(),c=calc(d,ov()),h='';
   if(curTab==='summary')h=summaryTab(c,d);
   else if(curTab==='risk')h=riskTab();
   else{var gs=GROUPS.filter(g=>g.tab===curTab&&vis(g,d.mode));
-    gs.forEach(g=>{h+='<h3 style="margin:2px 2px 8px;font-size:14px">'+g.t+'</h3>'+groupCard(d,g);});
+    gs.forEach(g=>{h+=groupCard(d,g);});
     if(curTab==='costs')h+='<button class="pdfbtn" onclick="exportPDF()">Export full appraisal (PDF)</button>';}
   document.getElementById('tabc').innerHTML=h;
 }
 function toggleDet(id){detOpen[id]=!detOpen[id];var p=document.getElementById('det-'+id),t=p.previousElementSibling;
   p.classList.toggle('open',detOpen[id]);t.classList.toggle('open',detOpen[id]);repaint();}
-function O(l,v,cls,big){return '<div class="o'+(big?' big':'')+'"><span>'+l+'</span><span class="v '+(cls||'')+'">'+v+'</span></div>';}
+function O(l,v,cls,big,tip){var ib=tip?'<button class="i" type="button" onclick="tipTog(this)">i</button>':'';var hint=tip?'<div class="fh" style="display:none">'+esc(tip)+'</div>':'';
+  return '<div class="ow"><div class="o'+(big?' big':'')+'"><span>'+l+ib+'</span><span class="v '+(cls||'')+'">'+v+'</span></div>'+hint+'</div>';}
 function detFor(id,c){
-  if(id==='purchase')return O('Discount below market value',pct(c.discount),c.discount>=0?'pos':'neg')+O('£/m² purchase',money(c.ppm2))+O('£/m² end value',money(c.gdvm2));
-  if(id==='finance')return O('Mortgage amount',money(c.mortgage))+O('Loan to value',pct(c.ltv))+O('Monthly payment',money(c.monthlyPay))+O('Interest over project',money(c.financeInterest))+O('Total finance costs',money(c.financeCosts),'',true);
-  if(id==='rental')return O('Net cash flow / mo',money(c.netCF),c.netCF>=0?'pos':'neg',true)+O('Annual cash flow',money(c.annualCF),c.annualCF>=0?'pos':'neg')+O('Gross yield',pct(c.grossYield))+O('Net yield',pct(c.netYield))+O('Operating costs / mo',money(c.opMonthly));
-  if(id==='acq')return O('Stamp Duty (auto)',money(c.stamp))+O('Total acquisition',money(c.acqTotal),'',true)+O('Cash before refurb',money(c.cashBeforeRefurb));
-  if(id==='refurb')return O('Subtotal',money(c.rBase))+O('Contingency',money(c.contingency))+O('Total refurbishment',money(c.refurb),'',true)+O('Cost per m²',money(c.refurbm2))+O('% of purchase price',pct(c.refurbPctPP));
-  if(id==='holding')return O('Monthly (incl. mortgage)',money(c.holdMoIncl))+O('Total (incl. mortgage)',money(c.holdTotIncl),'',true)+O('Excl. mortgage',money(c.holdTotNonMort));
-  if(id==='selling')return O('Agent fee',money(c.sellAgent))+O('Total selling costs',money(c.sellTotal),'',true);
+  if(id==='purchase')return O('Discount below market value',pct(c.discount),c.discount>=0?'pos':'neg','','How far below market value you’re buying: (market value − purchase price) ÷ market value.')+O('£/m² purchase',money(c.ppm2),'','','Purchase price ÷ floor area.')+O('£/m² end value',money(c.gdvm2),'','','End value (GDV) ÷ floor area.');
+  if(id==='finance')return O('Mortgage amount',money(c.mortgage),'','','Purchase price − deposit (£0 for a cash purchase).')+O('Loan to value',pct(c.ltv),'','','Mortgage ÷ purchase price.')+O('Monthly payment',money(c.monthlyPay),'','','Interest-only: mortgage × rate ÷ 12. Repayment: amortised over the term.')+O('Interest over project',money(c.financeInterest),'','','Monthly interest × the number of months you hold it.')+O('Total finance costs',money(c.financeCosts),'',true,'Arrangement fee + broker fee + valuation fee + all the interest over the project.');
+  if(id==='rental')return O('Net cash flow / mo',money(c.netCF),c.netCF>=0?'pos':'neg',true,'Rent − mortgage payment − monthly operating costs.')+O('Annual cash flow',money(c.annualCF),c.annualCF>=0?'pos':'neg','','Monthly net cash flow × 12.')+O('Gross yield',pct(c.grossYield),'','','Annual rent ÷ purchase price.')+O('Net yield',pct(c.netYield),'','','(Annual rent − annual operating costs) ÷ (purchase + acquisition + refurb).')+O('Operating costs / mo',money(c.opMonthly),'','','Management + maintenance + void (% of rent), plus insurance, gas, electrical, licensing, ground rent and service charge ÷ 12.');
+  if(id==='acq')return O('Stamp Duty (auto)',money(c.stamp),'','','Worked out automatically at additional-property rates for the purchase price.')+O('Total acquisition',money(c.acqTotal),'',true,'Stamp duty + solicitor + searches + survey + land registry + other mortgage fees + other.')+O('Cash before refurb',money(c.cashBeforeRefurb),'','','Deposit + acquisition costs + finance fees — the cash you need before any building work starts.');
+  if(id==='refurb')return O('Subtotal',money(c.rBase),'','','Every refurbishment line above added together (before contingency).')+O('Contingency',money(c.contingency),'','','The contingency % applied to the refurb subtotal.')+O('Total refurbishment',money(c.refurb),'',true,'Refurb subtotal + contingency.')+O('Cost per m²',money(c.refurbm2),'','','Total refurbishment ÷ floor area.')+O('% of purchase price',pct(c.refurbPctPP),'','','Total refurbishment ÷ purchase price.');
+  if(id==='holding')return O('Monthly (incl. mortgage)',money(c.holdMoIncl),'','','All monthly holding lines + the mortgage payment.')+O('Total (incl. mortgage)',money(c.holdTotIncl),'',true,'Monthly holding (incl. mortgage) × project months.')+O('Excl. mortgage',money(c.holdTotNonMort),'','','Holding total without the mortgage — the mortgage sits under Finance so it isn’t counted twice.');
+  if(id==='selling')return O('Agent fee',money(c.sellAgent),'','','Estate agent % × end value (GDV).')+O('Total selling costs',money(c.sellTotal),'',true,'Agent fee + solicitor + EPC + marketing + staging + other.');
   return '';
 }
 function healthScores(c){var isB=c.isBtl;function W(v){return v>=70?'Excellent':v>=45?'Fair':'Poor';}function B(v){return v>=70?'green':v>=45?'amber':'red';}
@@ -354,10 +378,10 @@ function summaryTab(c,d){var isB=c.isBtl,s=healthScores(c),col=s.overall>=70?'gr
   var cv={green:'var(--greenbg)',amber:'var(--amberbg)',red:'var(--redbg)'}[col],cf={green:'var(--green)',amber:'var(--amber)',red:'var(--red)'}[col];
   var h='<div class="score"><div class="ring" style="background:'+cv+';color:'+cf+'">'+s.overall+'</div><div class="t">Overall deal score<b>'+(s.overall>=70?'Strong deal':s.overall>=45?'Marginal — negotiate':'Poor — re-cut or walk')+'</b></div></div>';
   h+='<div class="hbs">'+s.items.map(it=>'<div class="hb"><span class="k">'+it.k+'</span><span class="p '+it.band+'">'+it.word+'</span></div>').join('')+'</div>';
-  h+='<h2 class="sec">Where the money goes</h2><div class="kv">'+O('Purchase price',money(c.pp))+O('Acquisition',money(c.acqTotal))+O('Refurbishment',money(c.refurb))+O('Finance',money(c.financeCosts))+O('Holding',money(c.holdTotNonMort))+(isB?'':O('Selling',money(c.sellTotal)))+O('Total project cost',money(c.totalProjectCost),'',true)+'</div>';
-  h+='<h2 class="sec">Returns</h2><div class="kv">'+(isB?O('Annual cash flow',money(c.annualCF),c.annualCF>=0?'pos':'neg',true)+O('Cash-on-cash',pct(c.coc))+O('Gross / net yield',pct(c.grossYield)+' / '+pct(c.netYield))+O('Equity created',money(c.equity))+O('Capital left in',money(c.capitalLeftIn))+O('Return on cash left in',pct(c.cocLeftIn)):O('Expected profit',money(c.profit),c.profit>=0?'pos':'neg',true)+O('ROI',pct(c.roi))+O('ROCE',pct(c.roce))+O('Profit / month',money(c.profitPM))+O('Profit margin (on GDV)',pct(c.margin))+O('Break-even sale',money(c.breakEven)))+O('Total cash needed',money(c.cashInvested))+'</div>';
-  h+='<h2 class="sec">Maximum offer</h2><div class="kv"><div class="hint">The most you should offer to still hit your target '+(isB?'yield.':'profit.')+'</div>'+O('Maximum offer price',money(c.mao),'',true)+
-    '<div class="fld"><div class="l">Target '+(isB?'gross yield':'profit')+'</div><div class="affix">'+(isB?'':'<span class="u">£</span>')+'<input class="inp" style="width:100px" inputmode="decimal" value="'+esc(isB?d.targetYield:d.targetProfit)+'" oninput="upd(\''+(isB?'targetYield':'targetProfit')+'\',this.value)">'+(isB?'<span class="u">%</span>':'')+'</div></div></div>';
+  h+='<h2 class="sec">Where the money goes</h2><div class="kv">'+O('Purchase price',money(c.pp))+O('Acquisition',money(c.acqTotal),'','','Stamp duty + solicitor + searches + survey + land registry + other.')+O('Refurbishment',money(c.refurb),'','','All refurbishment lines + contingency.')+O('Finance',money(c.financeCosts),'','','Fees + interest over the whole project.')+O('Holding',money(c.holdTotNonMort),'','','Monthly holding (excl. mortgage) × months.')+(isB?'':O('Selling',money(c.sellTotal),'','','Agent fee + solicitor + EPC + marketing + staging + other.'))+O('Total project cost',money(c.totalProjectCost),'',true,'Purchase + acquisition + refurbishment + finance + holding'+(isB?'.':' + selling.'))+'</div>';
+  h+='<h2 class="sec">Returns</h2><div class="kv">'+(isB?O('Annual cash flow',money(c.annualCF),c.annualCF>=0?'pos':'neg',true,'Monthly net cash flow × 12.')+O('Cash-on-cash',pct(c.coc),'','','Annual cash flow ÷ total cash invested.')+O('Gross / net yield',pct(c.grossYield)+' / '+pct(c.netYield),'','','Gross: annual rent ÷ price. Net: income after operating costs ÷ money in.')+O('Equity created',money(c.equity),'','','End value − the new mortgage after you refinance.')+O('Capital left in',money(c.capitalLeftIn),'','','Cash invested − cash released when you refinance.')+O('Return on cash left in',pct(c.cocLeftIn),'','','Annual cash flow ÷ the capital still left in the deal.'):O('Expected profit',money(c.profit),c.profit>=0?'pos':'neg',true,'End value (GDV) − total project cost.')+O('ROI',pct(c.roi),'','','Profit ÷ total cash invested.')+O('ROCE',pct(c.roce),'','','Profit ÷ total project cost.')+O('Profit / month',money(c.profitPM),'','','Profit ÷ project months.')+O('Profit margin (on GDV)',pct(c.margin),'','','Profit ÷ end value.')+O('Break-even sale',money(c.breakEven),'','','The sale price where profit is exactly zero, allowing for the agent’s %.'))+O('Total cash needed',money(c.cashInvested),'','','Deposit + acquisition + finance fees + refurbishment + holding (excl. mortgage).')+'</div>';
+  h+='<h2 class="sec">Maximum offer</h2><div class="kv"><div class="hint">The most you should offer to still hit your target '+(isB?'yield.':'profit.')+'</div>'+O('Maximum offer price',money(c.mao),'',true,isB?'Annual rent ÷ your target yield.':'End value − target profit − refurb − selling − holding − finance − acquisition.')+
+    '<div class="fw"><div class="fld"><div class="l">Target '+(isB?'gross yield':'profit')+iBtn({tip:isB?'Your minimum acceptable gross yield.':'The profit you want this deal to make.'})+'</div><div class="affix">'+(isB?'':'<span class="u">£</span>')+'<input class="inp" style="width:100px" inputmode="decimal" value="'+esc(isB?d.targetYield:d.targetProfit)+'" oninput="upd(\''+(isB?'targetYield':'targetProfit')+'\',this.value)">'+(isB?'<span class="u">%</span>':'')+'</div></div><div class="fh" style="display:none">'+(isB?'Your minimum acceptable gross yield.':'The profit you want this deal to make.')+'</div></div></div>';
   return h;
 }
 var sens={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0},stressOn=null;
@@ -399,11 +423,15 @@ function paintCtrl(c,d){var el=document.getElementById('ctrlBody');if(!el)return
   function tbl(a,tot,l){return '<table class="tbl">'+a.map(x=>'<tr><td>'+x[0]+'</td><td>'+money(x[1])+'</td></tr>').join('')+'<tr class="tot"><td>'+l+' ('+pct(tot/p)+' of cost)</td><td>'+money(tot)+'</td></tr></table>';}
   el.innerHTML='<div class="grp"><h3>You can control</h3>'+tbl(ci,ct,'Running total')+'</div><div class="grp"><h3>You cannot control</h3>'+tbl(ni,nt,'Running total')+'<div class="hint">Market interest rates, inflation, planning and tax sit behind these — the stress tests show your exposure.</div></div>';
 }
-function repaint(){var d=deal(),c=calc(d);
+function sensActive(){return sens.ppMult!==1||sens.gdvMult!==1||sens.refurbMult!==1||sens.rateDelta!==0||sens.rentMult!==1||sens.monthsDelta!==0;}
+function ov(){return sensActive()?sens:{};}
+function repaint(){var d=deal(),active=sensActive(),c=calc(d,ov());
   var s=healthScores(c),isB=c.isBtl,band=s.overall>=70?'green':s.overall>=45?'amber':'red';
   var big=isB?c.annualCF:c.profit,lab=isB?'Expected annual cash flow':'Expected profit';
-  document.getElementById('summary').innerHTML='<div class="top"><div><div class="lab">'+lab+'</div><div class="big '+(big>=0?'pos':'neg')+'">'+money(big)+'</div></div><span class="pill '+band+'">'+(band==='green'?'Strong':band==='amber'?'Marginal':'Poor')+' · '+s.overall+'</span></div>'+
-    '<div class="mini">'+(isB?'Yield <b>'+pct(c.grossYield)+'</b>':'ROI <b>'+pct(c.roi)+'</b>')+' · Cash <b>'+money(c.cashInvested)+'</b> · Max offer <b>'+money(c.mao)+'</b></div>';
+  var sm=document.getElementById('summary');if(sm){sm.className='summary '+d.mode;
+  sm.innerHTML='<div class="top"><div><div class="lab">'+lab+'</div><div class="big '+(big>=0?'pos':'neg')+'">'+money(big)+'</div></div><div style="text-align:right"><span class="modetag '+d.mode+'">'+(isB?'BUY TO LET':'FLIP')+'</span><div style="margin-top:7px"><span class="pill '+band+'">'+(band==='green'?'Strong':band==='amber'?'Marginal':'Poor')+' · '+s.overall+'</span></div></div></div>'+
+    '<div class="mini">'+(isB?'Yield <b>'+pct(c.grossYield)+'</b>':'ROI <b>'+pct(c.roi)+'</b>')+' · Cash <b>'+money(c.cashInvested)+'</b> · Max offer <b>'+money(c.mao)+'</b></div>'+
+    (active?'<div class="scen" onclick="resetSens()"><span>⚠ What-if scenario applied</span><span>Reset ✕</span></div>':'');}
   GROUPS.forEach(g=>{var el=document.getElementById('det-'+g.id);if(el)el.innerHTML=detFor(g.id,c);});
   var ml=document.getElementById('mapLink');if(ml)ml.innerHTML=mapLinkHTML(d.postcode);
   if(curTab==='summary')document.getElementById('tabc').innerHTML=summaryTab(c,d);
@@ -419,7 +447,7 @@ function updDep(w,val){var d=deal(),pp=num(d.purchasePrice);
   save();repaint();}
 function updNote(id,v){var d=deal();if(!d.notes)d.notes={};d.notes[id]=v;save();}
 function setMode(m){var d=deal();d.mode=m;save();sens={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};stressOn=null;render();}
-function newDeal(){var n=prompt('Name this property (e.g. 12 Example Street):','');if(n===null)return;var d=defDeal();d.name=(n&&n.trim())||('Property '+(store.deals.length+1));d.status='testing';store.deals.push(d);store.current=d.id;save();curTab='purchase';view='deal';render();window.scrollTo(0,0);}
+function newDeal(){var n=prompt('Name this property (e.g. 12 Example Street):','');if(n===null)return;var d=defDeal();d.name=(n&&n.trim())||('Property '+(store.deals.length+1));d.address=d.name;d.status='testing';store.deals.push(d);store.current=d.id;save();curTab='purchase';view='deal';render();window.scrollTo(0,0);}
 function renameDeal(){var d=deal();var n=prompt('Rename property:',d.name);if(n&&n.trim()){d.name=n.trim();save();render();}}
 function delDeal(){if(!confirm('Delete this property for good?'))return;store.deals=store.deals.filter(x=>x.id!==store.current);store.current=store.deals.length?store.deals[0].id:null;save();goDash();}
 function toggleMenu(e){e.stopPropagation();document.getElementById('menuPop').classList.toggle('open');}
