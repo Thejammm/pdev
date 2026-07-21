@@ -29,7 +29,7 @@
   .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:12px 16px 4px}
   select.deals{border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:13px;font-weight:600;color:var(--ink);background:#fff;max-width:190px}
   .mini{background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
-  .seg{display:inline-flex;background:#e7ebf2;border-radius:10px;padding:3px;margin-left:auto}
+  .seg{display:inline-flex;background:#e7ebf2;border-radius:10px;padding:3px}
   .seg button{border:none;background:none;padding:7px 13px;font-size:13px;font-weight:700;color:#67707f;border-radius:8px;cursor:pointer}
   .seg button.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(20,30,50,.12)}
   .stick{position:sticky;top:0;z-index:30;background:var(--bg);padding:10px 16px 0;border-bottom:1px solid var(--line)}
@@ -95,38 +95,31 @@
   h2.sec{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--faint);font-weight:800;margin:16px 2px 8px}
   .note{font-size:12px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-top:12px;line-height:1.5}
   .pdfbtn{width:100%;background:var(--navy);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;margin-top:6px}
+  .ttl.dealname{cursor:pointer}
+  .dashwrap{padding:14px 16px 24px}
+  .filters{display:flex;gap:7px;margin:4px 0 12px;flex-wrap:wrap}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:20px;padding:7px 13px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer}
+  .chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .pcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer}
+  .pcard:active{background:#fbfcfe}
+  .pcname{font-size:15px;font-weight:700}
+  .pcmeta{font-size:12px;color:var(--muted);margin-top:2px}
+  .pcright{text-align:right;flex:none}
+  .cardtog{display:inline-flex;background:#eef1f6;border-radius:8px;padding:2px;margin-bottom:5px}
+  .cardtog button{border:none;background:none;font-size:10.5px;font-weight:800;color:var(--muted);padding:3px 9px;border-radius:6px;cursor:pointer}
+  .cardtog button.on{background:#fff;color:var(--navy);box-shadow:0 1px 2px rgba(20,30,50,.12)}
+  .pcbig{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+  .pcbig.pos{color:var(--green)} .pcbig.neg{color:var(--red)}
+  .pclab{font-size:10.5px;color:var(--muted)}
+  .newbtn{width:100%;background:var(--navy);color:#fff;border:none;border-radius:13px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;margin-top:6px;box-shadow:0 3px 10px rgba(31,56,100,.25)}
+  .empty{text-align:center;color:var(--muted);padding:28px 16px;font-size:14px}
+  .mini.save{background:var(--greenbg);color:var(--green);border-color:#cfe8d8}
+  .mini.del{background:var(--redbg);color:var(--red);border-color:#f0cccc}
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:#182031;color:#fff;padding:11px 18px;border-radius:22px;font-size:14px;font-weight:700;z-index:200;box-shadow:0 6px 20px rgba(0,0,0,.25)}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="appbar">
-    <div class="ttl">PropDev · Appraisal<span id="sub">Feasibility &amp; risk</span></div>
-    <div class="menu">
-      <button class="ic" onclick="toggleMenu(event)">···</button>
-      <div class="menu-pop" id="menuPop">
-        <button onclick="exportPDF()">Export appraisal (PDF)</button>
-        <button onclick="exportJSON()">Download backup</button>
-        <button onclick="document.getElementById('imp').click()">Restore backup</button>
-      </div>
-      <input type="file" id="imp" accept="application/json" style="display:none" onchange="importJSON(event)">
-    </div>
-  </div>
-  <div class="controls">
-    <select class="deals" id="dealSel" onchange="switchDeal(this.value)"></select>
-    <button class="mini" onclick="newDeal()">＋ New</button>
-    <button class="mini" onclick="renameDeal()">Rename</button>
-    <button class="mini" onclick="delDeal()">Delete</button>
-    <div class="seg" id="modeSeg">
-      <button data-m="flip" onclick="setMode('flip')">Flip</button>
-      <button data-m="btl" onclick="setMode('btl')">Buy to Let</button>
-    </div>
-  </div>
-  <div class="stick">
-    <div class="summary" id="summary"></div>
-    <div class="tabs" id="tabs"></div>
-  </div>
-  <div class="tabc" id="tabc"></div>
-</div>
+<div class="wrap"><div id="app"></div></div>
 
 <script>
 var MEM={};var HAS_LS=(function(){try{localStorage.setItem('__t','1');localStorage.removeItem('__t');return true;}catch(e){return false;}})();
@@ -134,8 +127,9 @@ function lsGet(k){try{return HAS_LS?localStorage.getItem(k):MEM[k];}catch(e){ret
 function lsSet(k,v){try{if(HAS_LS)localStorage.setItem(k,v);else MEM[k]=v;}catch(e){MEM[k]=v;}}
 var KEY='pdevPro_v1';var store={deals:[],current:null};
 function load(){var r=lsGet(KEY);if(r){try{store=JSON.parse(r);}catch(e){}}if(!store.deals)store.deals=[];
-  if(!store.deals.length){var d=defDeal();store.deals.push(d);store.current=d.id;}
-  if(!store.current||!store.deals.find(x=>x.id===store.current))store.current=store.deals[0].id;}
+  store.deals.forEach(d=>{if(!d.status)d.status='saved';});
+  if(!store.deals.length){var d=defDeal();d.status='saved';store.deals.push(d);store.current=d.id;}
+  if(!store.current)store.current=store.deals.length?store.deals[0].id:null;}
 function save(){lsSet(KEY,JSON.stringify(store));}
 function deal(){return store.deals.find(x=>x.id===store.current);}
 function uid(){return 'd'+Date.now()+Math.floor(Math.random()*1000);}
@@ -148,7 +142,7 @@ function mapLinkHTML(pc){pc=String(pc==null?'':pc).trim();if(!pc)return '';retur
 function sdlt(p){var b=[[0,125000,.05],[125000,250000,.07],[250000,925000,.10],[925000,1500000,.15],[1500000,1e12,.17]];var t=0;for(var i=0;i<b.length;i++)t+=Math.max(0,Math.min(p,b[i][1])-b[i][0])*b[i][2];return t;}
 function amortPay(P,r,n){if(P<=0)return 0;if(r<=0)return P/n;return P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);}
 function amortBal(P,r,n,a){if(P<=0)return 0;if(r<=0)return Math.max(0,P-(P/n)*a);var pay=amortPay(P,r,n),bal=P;for(var i=0;i<a&&i<n;i++)bal=bal*(1+r)-pay;return Math.max(0,bal);}
-function defDeal(){return{id:uid(),name:'New appraisal',mode:'flip',
+function defDeal(){return{id:uid(),name:'New appraisal',mode:'flip',status:'testing',
   address:'',postcode:'',purchasePrice:200000,offerPrice:190000,marketValue:220000,gdv:275000,monthlyRent:1250,
   propertyType:'Terraced house',floorArea:90,bedrooms:3,bathrooms:1,
   mortgageType:'bridging',mortgageBasis:'interest',depositPct:25,interestRate:9,termYears:1,
@@ -267,14 +261,46 @@ var TABS=[['summary','Summary'],['purchase','Purchase'],['costs','Costs'],['fina
 var curTab='summary';
 var detOpen={};
 function vis(g,mode){return g.modes==='both'||g.modes===mode;}
-function render(){
-  var d=deal();
+var view='dash',dashFilter='saved';
+function statusOf(d){return d.status||'saved';}
+function render(){if(view==='dash')renderDash();else renderDeal();}
+function renderDash(){
+  var counts={saved:0,testing:0,archived:0};store.deals.forEach(d=>{counts[statusOf(d)]++;});
+  if(counts[dashFilter]===0){dashFilter=counts.saved?'saved':counts.testing?'testing':counts.archived?'archived':'saved';}
+  var list=store.deals.filter(d=>statusOf(d)===dashFilter);
+  var h='<div class="appbar"><div class="ttl">Your properties<span>'+counts.saved+' saved · '+counts.testing+' in progress</span></div>'+
+    '<div class="menu"><button class="ic" onclick="toggleMenu(event)">···</button><div class="menu-pop" id="menuPop"><button onclick="exportJSON()">Download backup</button><button onclick="document.getElementById(\'imp\').click()">Restore backup</button></div><input type="file" id="imp" accept="application/json" style="display:none" onchange="importJSON(event)"></div></div>';
+  h+='<div class="dashwrap"><div class="filters">'+['saved','testing','archived'].map(f=>'<button class="chip'+(dashFilter===f?' on':'')+'" onclick="setFilter(\''+f+'\')">'+({saved:'Saved',testing:'In progress',archived:'Archived'}[f])+' ('+counts[f]+')</button>').join('')+'</div>';
+  h+=list.length?list.map(cardHTML).join(''):'<div class="empty">No '+({saved:'saved',testing:'in-progress',archived:'archived'}[dashFilter])+' properties here yet.<br>Tap “New property” to start one.</div>';
+  h+='<button class="newbtn" onclick="newDeal()">＋ New property</button></div>';
+  document.getElementById('app').innerHTML=h;
+}
+function cardHTML(d){var c=calc(d),isB=d.mode==='btl',val=isB?c.netCF:c.profit;
+  var big=isB?money(c.netCF)+'/mo':money(c.profit),lab=isB?'monthly cash flow':'profit';
+  var meta=(isB?'Buy to Let':'Flip')+' · '+money(c.pp)+(isB?' · '+pct(c.grossYield)+' yield':' · GDV '+money(c.gdv));
+  return '<div class="pcard" onclick="openDeal(\''+d.id+'\')"><div><div class="pcname">'+esc(d.name||'Untitled')+'</div><div class="pcmeta">'+meta+'</div></div>'+
+    '<div class="pcright"><div class="cardtog" onclick="event.stopPropagation()"><button class="'+(!isB?'on':'')+'" onclick="cardMode(\''+d.id+'\',\'flip\',event)">Flip</button><button class="'+(isB?'on':'')+'" onclick="cardMode(\''+d.id+'\',\'btl\',event)">BTL</button></div>'+
+    '<div class="pcbig '+(val>=0?'pos':'neg')+'">'+big+'</div><div class="pclab">'+lab+'</div></div></div>';
+}
+function cardMode(id,m,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.id===id);if(d){d.mode=m;save();renderDash();}}
+function setFilter(f){dashFilter=f;renderDash();}
+function openDeal(id){store.current=id;view='deal';curTab='summary';render();window.scrollTo(0,0);}
+function goDash(){view='dash';render();window.scrollTo(0,0);}
+function renderDeal(){var d=deal();if(!d){goDash();return;}
+  var h='<div class="appbar"><button class="ic" onclick="goDash()">‹ Properties</button>'+
+    '<div class="ttl dealname" onclick="renameDeal()" style="flex:1;text-align:center;margin:0 8px">'+esc(d.name||'Untitled')+'<span>'+(d.mode==='btl'?'Buy to Let':'Flip')+' · '+statusOf(d)+' · tap to rename</span></div>'+
+    '<div class="menu"><button class="ic" onclick="toggleMenu(event)">···</button><div class="menu-pop" id="menuPop"><button onclick="exportPDF()">Export PDF</button><button onclick="exportJSON()">Backup</button><button onclick="document.getElementById(\'imp\').click()">Restore</button></div><input type="file" id="imp" accept="application/json" style="display:none" onchange="importJSON(event)"></div></div>';
+  h+='<div class="controls"><div class="seg" id="modeSeg"><button data-m="flip" onclick="setMode(\'flip\')">Flip</button><button data-m="btl" onclick="setMode(\'btl\')">Buy to Let</button></div>'+
+    '<button class="mini save" onclick="setStatus(\'saved\')">✓ Save</button><button class="mini" onclick="setStatus(\'archived\')">Archive</button><button class="mini del" onclick="delDeal()">Delete</button></div>';
+  h+='<div class="stick"><div class="summary" id="summary"></div><div class="tabs" id="tabs"></div></div><div class="tabc" id="tabc"></div>';
+  document.getElementById('app').innerHTML=h;
   document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on',b.getAttribute('data-m')===d.mode));
-  document.getElementById('dealSel').innerHTML=store.deals.map(x=>'<option value="'+x.id+'"'+(x.id===store.current?' selected':'')+'>'+esc(x.name)+'</option>').join('');
   document.getElementById('tabs').innerHTML=TABS.map(t=>'<button class="'+(curTab===t[0]?'on':'')+'" onclick="setTab(\''+t[0]+'\')">'+t[1]+'</button>').join('');
   renderTab();repaint();
 }
-function setTab(t){curTab=t;render();window.scrollTo(0,0);}
+function setStatus(s){var d=deal();d.status=s;save();toast(s==='saved'?'Saved to dashboard':s==='archived'?'Archived':'Updated');if(s==='archived')goDash();else renderDeal();}
+function toast(msg){var t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>{t.style.transition='opacity .4s';t.style.opacity='0';setTimeout(()=>t.remove(),400);},1500);}
+function setTab(t){curTab=t;renderDeal();window.scrollTo(0,0);}
 function q(f){return f.tip?'<span class="q" title="'+esc(f.tip)+'">?</span>':'';}
 function fieldHTML(d,f){
   var v=d[f.k];
@@ -378,7 +404,6 @@ function repaint(){var d=deal(),c=calc(d);
   var big=isB?c.annualCF:c.profit,lab=isB?'Expected annual cash flow':'Expected profit';
   document.getElementById('summary').innerHTML='<div class="top"><div><div class="lab">'+lab+'</div><div class="big '+(big>=0?'pos':'neg')+'">'+money(big)+'</div></div><span class="pill '+band+'">'+(band==='green'?'Strong':band==='amber'?'Marginal':'Poor')+' · '+s.overall+'</span></div>'+
     '<div class="mini">'+(isB?'Yield <b>'+pct(c.grossYield)+'</b>':'ROI <b>'+pct(c.roi)+'</b>')+' · Cash <b>'+money(c.cashInvested)+'</b> · Max offer <b>'+money(c.mao)+'</b></div>';
-  document.getElementById('sub').textContent=(isB?'Buy to Let':'Flip')+' · '+(d.name||'appraisal');
   GROUPS.forEach(g=>{var el=document.getElementById('det-'+g.id);if(el)el.innerHTML=detFor(g.id,c);});
   var ml=document.getElementById('mapLink');if(ml)ml.innerHTML=mapLinkHTML(d.postcode);
   if(curTab==='summary')document.getElementById('tabc').innerHTML=summaryTab(c,d);
@@ -394,12 +419,11 @@ function updDep(w,val){var d=deal(),pp=num(d.purchasePrice);
   save();repaint();}
 function updNote(id,v){var d=deal();if(!d.notes)d.notes={};d.notes[id]=v;save();}
 function setMode(m){var d=deal();d.mode=m;save();sens={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};stressOn=null;render();}
-function newDeal(){var d=defDeal();d.name='Appraisal '+(store.deals.length+1);store.deals.push(d);store.current=d.id;save();curTab='purchase';render();}
-function switchDeal(id){store.current=id;save();render();}
-function renameDeal(){var d=deal(),n=prompt('Name this appraisal:',d.name);if(n){d.name=n;save();render();}}
-function delDeal(){if(store.deals.length<=1){alert('Keep at least one appraisal.');return;}if(!confirm('Delete this appraisal?'))return;store.deals=store.deals.filter(x=>x.id!==store.current);store.current=store.deals[0].id;save();render();}
+function newDeal(){var n=prompt('Name this property (e.g. 12 Example Street):','');if(n===null)return;var d=defDeal();d.name=(n&&n.trim())||('Property '+(store.deals.length+1));d.status='testing';store.deals.push(d);store.current=d.id;save();curTab='purchase';view='deal';render();window.scrollTo(0,0);}
+function renameDeal(){var d=deal();var n=prompt('Rename property:',d.name);if(n&&n.trim()){d.name=n.trim();save();render();}}
+function delDeal(){if(!confirm('Delete this property for good?'))return;store.deals=store.deals.filter(x=>x.id!==store.current);store.current=store.deals.length?store.deals[0].id:null;save();goDash();}
 function toggleMenu(e){e.stopPropagation();document.getElementById('menuPop').classList.toggle('open');}
-document.addEventListener('click',()=>document.getElementById('menuPop').classList.remove('open'));
+document.addEventListener('click',()=>{var m=document.getElementById('menuPop');if(m)m.classList.remove('open');});
 function exportJSON(){var b=new Blob([JSON.stringify(store,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='propdev-appraisals.json';a.click();}
 function importJSON(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(d.deals){store=d;if(!store.current)store.current=store.deals[0].id;save();render();}else alert('Not a valid backup.');}catch(err){alert('Could not read file.');}};r.readAsText(f);e.target.value='';}
 function pdfText(s){return String(s==null?'':s).replace(/[−–—]/g,'-').replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/∞/g,'inf').replace(/[▲▼·→]/g,'-').replace(/[^\x00-\xFF]/g,'?');}
