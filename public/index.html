@@ -113,6 +113,19 @@
   .pcbig.pos{color:var(--green)} .pcbig.neg{color:var(--red)}
   .pclab{font-size:10.5px;color:var(--muted)}
   .newbtn{width:100%;background:var(--navy);color:#fff;border:none;border-radius:13px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;margin-top:6px;box-shadow:0 3px 10px rgba(31,56,100,.25)}
+  .cmpbtn{width:100%;background:#fff;border:1px solid var(--navy);color:var(--navy);border-radius:13px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;margin-top:9px}
+  .cmpchips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+  .cmpchip{background:#fff;border:1px solid var(--line);border-radius:20px;padding:8px 13px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}
+  .cmpchip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .cmpchip.on.flip{background:var(--flip);border-color:var(--flip)} .cmpchip.on.btl{background:var(--btl);border-color:var(--btl)}
+  .cmptbl-wrap{overflow-x:auto}
+  .cmptbl{width:100%;border-collapse:collapse;font-size:12.5px}
+  .cmptbl th{padding:9px 6px;text-align:center;font-size:12px;font-weight:800;vertical-align:top;border-bottom:2px solid var(--line)}
+  .cmpname{font-size:11.5px;margin-top:4px;line-height:1.2}
+  .cmptbl td{padding:9px 5px;text-align:center;border-bottom:1px solid var(--line);font-weight:700;font-variant-numeric:tabular-nums}
+  .cmptbl td.rl{text-align:left;color:var(--muted);font-weight:600;font-size:11.5px;white-space:nowrap}
+  .cmptbl td.best{background:var(--greenbg);color:var(--green)}
+  .cmptbl .csub{display:block;font-size:10px;color:var(--muted);font-weight:600}
   .empty{text-align:center;color:var(--muted);padding:28px 16px;font-size:14px}
   .mini.save{background:var(--greenbg);color:var(--green);border-color:#cfe8d8}
   .mini.del{background:var(--redbg);color:var(--red);border-color:#f0cccc}
@@ -324,9 +337,9 @@ var TABS=[['summary','Summary'],['purchase','Purchase'],['costs','Costs'],['fina
 var curTab='summary';
 var detOpen={};
 function vis(g,mode){return g.modes==='both'||g.modes===mode;}
-var view='dash',dashFilter='saved';
+var view='dash',dashFilter='saved',compareSel=[];
 function statusOf(d){return d.status||'saved';}
-function render(){if(view==='dash')renderDash();else renderDeal();}
+function render(){if(view==='dash')renderDash();else if(view==='compare')renderCompare();else renderDeal();}
 function renderDash(){
   var counts={saved:0,testing:0,archived:0};store.deals.forEach(d=>{counts[statusOf(d)]++;});
   if(counts[dashFilter]===0){dashFilter=counts.saved?'saved':counts.testing?'testing':counts.archived?'archived':'saved';}
@@ -335,7 +348,7 @@ function renderDash(){
     '<div class="menu"><button class="ic" onclick="toggleMenu(event)">···</button><div class="menu-pop" id="menuPop"><button onclick="exportJSON()">Download backup</button><button onclick="document.getElementById(\'imp\').click()">Restore backup</button></div><input type="file" id="imp" accept="application/json" style="display:none" onchange="importJSON(event)"></div></div>';
   h+='<div class="dashwrap">'+folioHTML()+'<div class="filters">'+['saved','testing','archived'].map(f=>'<button class="chip'+(dashFilter===f?' on':'')+'" onclick="setFilter(\''+f+'\')">'+({saved:'Saved',testing:'In progress',archived:'Archived'}[f])+' ('+counts[f]+')</button>').join('')+'</div>';
   h+=list.length?list.map(cardHTML).join(''):'<div class="empty">No '+({saved:'saved',testing:'in-progress',archived:'archived'}[dashFilter])+' properties here yet.<br>Tap “New property” to start one.</div>';
-  h+='<button class="newbtn" onclick="newDeal()">＋ New property</button></div>';
+  h+='<button class="newbtn" onclick="newDeal()">＋ New property</button>'+(store.deals.filter(d=>statusOf(d)!=='archived').length>=2?'<button class="cmpbtn" onclick="openCompare()">⇄ Compare properties</button>':'')+'</div>';
   document.getElementById('app').innerHTML=h;
 }
 function cardHTML(d){var c=calc(d),isB=d.mode==='btl',val=isB?c.netCF:c.profit;
@@ -386,6 +399,37 @@ function cardMode(id,m,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.i
 function setFilter(f){dashFilter=f;renderDash();}
 function openDeal(id){store.current=id;view='deal';curTab='summary';sens={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};stressOn=null;render();window.scrollTo(0,0);}
 function goDash(){view='dash';render();window.scrollTo(0,0);}
+function openCompare(){view='compare';if(compareSel.length<2){compareSel=store.deals.filter(d=>statusOf(d)!=='archived').slice(0,3).map(d=>d.id);}render();window.scrollTo(0,0);}
+function toggleCompare(id){var i=compareSel.indexOf(id);if(i>=0)compareSel.splice(i,1);else{if(compareSel.length>=3)compareSel.shift();compareSel.push(id);}renderCompare();}
+function renderCompare(){
+  var deals=store.deals.filter(d=>statusOf(d)!=='archived');
+  var h='<div class="appbar"><button class="ic" onclick="goDash()">‹ Properties</button><div class="ttl" style="flex:1;text-align:center">Compare</div><span style="width:44px"></span></div><div class="dashwrap">';
+  h+='<div class="hint">Tap 2 or 3 properties to compare side by side. The best in each row is highlighted green.</div>';
+  h+='<div class="cmpchips">'+deals.map(d=>'<button class="cmpchip'+(compareSel.indexOf(d.id)>=0?' on '+d.mode:'')+'" onclick="toggleCompare(\''+d.id+'\')">'+esc(d.name||'Untitled')+'</button>').join('')+'</div>';
+  var sel=compareSel.map(id=>store.deals.find(x=>x.id===id)).filter(Boolean).slice(0,3);
+  h+=sel.length<2?'<div class="empty">Pick at least two properties above.</div>':compareTable(sel);
+  h+='</div>';document.getElementById('app').innerHTML=h;
+}
+function compareTable(sel){
+  var cs=sel.map(d=>({d:d,c:calc(d)}));
+  function row(label,fn,fmt,better){
+    var vals=cs.map(x=>fn(x.c,x.d)),fin=vals.filter(v=>isFinite(v));
+    var best=better&&fin.length?(better==='hi'?Math.max.apply(null,fin):Math.min.apply(null,fin)):null;
+    var tds=cs.map((x,i)=>{var v=vals[i],isB=best!=null&&isFinite(v)&&v===best;return '<td'+(isB?' class="best"':'')+'>'+fmt(v,x)+'</td>';}).join('');
+    return '<tr><td class="rl">'+label+'</td>'+tds+'</tr>';
+  }
+  var head='<tr><td class="rl"></td>'+cs.map(x=>'<th><span class="modetag '+x.d.mode+'">'+(x.d.mode==='btl'?'BTL':'FLIP')+'</span><div class="cmpname">'+esc(x.d.name||'Untitled')+'</div></th>').join('')+'</tr>';
+  var b='';
+  b+=row('Purchase price',c=>c.pp,v=>money(v),'lo');
+  b+=row('End value / GDV',c=>c.gdv,v=>money(v),'hi');
+  b+=row('Cash needed',c=>c.cashInvested,v=>money(v),'lo');
+  b+=row('Profit / cash flow',(c,d)=>d.mode==='btl'?c.annualCF:c.profit,(v,x)=>money(v)+'<span class="csub">'+(x.d.mode==='btl'?'/yr':'total')+'</span>','hi');
+  b+=row('Monthly',(c,d)=>d.mode==='btl'?c.netCF:c.profitPM,v=>money(v)+'/mo','hi');
+  b+=row('Return on cash',(c,d)=>d.mode==='btl'?c.coc:c.roi,v=>pct(v),'hi');
+  b+=row('Max offer',c=>c.mao,v=>money(v),'hi');
+  b+=row('Deal score',c=>healthScores(c).overall,v=>v+'/100','hi');
+  return '<div class="cmptbl-wrap"><table class="cmptbl">'+head+b+'</table></div><div class="hint" style="margin-top:10px">Deal score (0–100) is the fairest like-for-like comparison across Flip and Buy-to-Let.</div>';
+}
 function renderDeal(){var d=deal();if(!d){goDash();return;}
   var h='<div class="appbar"><button class="ic" onclick="goDash()">‹ Properties</button>'+
     '<div class="ttl dealname" onclick="renameDeal()" style="flex:1;text-align:center;margin:0 8px">'+esc(d.name||'Untitled')+'<span>'+(d.mode==='btl'?'Buy to Let':'Flip')+' · '+statusOf(d)+' · tap to rename</span></div>'+
