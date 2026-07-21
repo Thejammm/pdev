@@ -254,7 +254,7 @@ function sdlt(p){var b=[[0,125000,.05],[125000,250000,.07],[250000,925000,.10],[
 function amortPay(P,r,n){if(P<=0)return 0;if(r<=0)return P/n;return P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);}
 function amortBal(P,r,n,a){if(P<=0)return 0;if(r<=0)return Math.max(0,P-(P/n)*a);var pay=amortPay(P,r,n),bal=P;for(var i=0;i<a&&i<n;i++)bal=bal*(1+r)-pay;return Math.max(0,bal);}
 function defDeal(){return{id:uid(),name:'New appraisal',mode:'flip',status:'testing',
-  address:'',postcode:'',purchasePrice:200000,offerPrice:190000,marketValue:220000,gdv:275000,monthlyRent:1250,
+  address:'',postcode:'',purchasePrice:200000,marketValue:220000,gdv:275000,monthlyRent:1250,
   propertyType:'Terraced house',floorArea:90,bedrooms:3,bathrooms:1,
   mortgageType:'bridging',mortgageBasis:'interest',depositPct:25,interestRate:9,termYears:1,
   arrangeFeePct:2,brokerFee:1500,valuationFee:500,refiLTV:75,
@@ -301,7 +301,6 @@ var GROUPS=[
    F('address','Property address','text','','The property address. Pre-filled with the name you gave it — edit if you like.'),
    F('postcode','Postcode','text','','Type a postcode to open the area in Google Maps.'),
    F('purchasePrice','Purchase price','money','£','What you actually pay for the property — the figure the deal is built on.',['Yes','Variable','High',true]),
-   F('offerPrice','Offer price','money','£','What you plan to offer. Compare it with the maximum offer in the summary.',['Yes','Variable','Medium',true]),
    F('marketValue','Market value (as-is)','money','£','What the property is worth today, before any work — used for the discount figure.',['No','Estimated','Medium',false]),
    F('gdv','End value / GDV','money','£','Gross Development Value: the resale price once done up (flip), or the valuation you refinance against (BTL).',['No','Estimated','High',false]),
    F('monthlyRent','Monthly rent','money','£','The rent you expect to achieve once the property is done up.',['No','Estimated','Medium',false]),
