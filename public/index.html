@@ -169,7 +169,7 @@
   .growseg{display:flex;gap:6px;margin:2px 0 10px}
   .growseg button{flex:1;border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer}
   .growseg button.on{background:var(--btl);color:#fff;border-color:var(--btl)}
-  .pcbtns{display:flex;gap:16px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line)}
+  .pcbtns{display:flex;gap:16px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line);flex-wrap:wrap}
   .pcact{background:none;border:none;color:var(--accent);font-size:12.5px;font-weight:700;cursor:pointer;padding:0}
   .pcact:active{opacity:.6}
   .pcdel{background:none;border:none;color:#b7bdc9;font-size:12.5px;font-weight:700;cursor:pointer;padding:0;margin-left:auto}
@@ -374,8 +374,9 @@ function cardHTML(d){var c=calc(d),isB=d.mode==='btl',val=isB?c.netCF:c.profit;
   return '<div class="pcard '+d.mode+'"><div class="pctop" onclick="openDeal(\''+d.id+'\')"><div><div class="pcname">'+esc(d.name||'Untitled')+'</div><div class="pcmeta">'+meta+'</div></div>'+
     '<div class="pcright"><div class="cardtog" onclick="event.stopPropagation()"><button class="'+(!isB?'on':'')+'" onclick="cardMode(\''+d.id+'\',\'flip\',event)">Flip</button><button class="'+(isB?'on':'')+'" onclick="cardMode(\''+d.id+'\',\'btl\',event)">BTL</button></div>'+
     '<div class="pcbig '+(val>=0?'pos':'neg')+'">'+big+'</div><div class="pclab">'+lab+'</div></div></div>'+
-    '<div class="pcbtns">'+(arch?'<button class="pcact" onclick="restoreCard(\''+d.id+'\',event)">＋ Add to dashboard</button>':'<button class="pcact" onclick="archiveCard(\''+d.id+'\',event)">Remove from dashboard</button>')+'<button class="pcdel" onclick="removeCard(\''+d.id+'\',event)">Delete for good</button></div></div>';
+    '<div class="pcbtns"><button class="pcact" onclick="dupCard(\''+d.id+'\',event)">Duplicate</button>'+(arch?'<button class="pcact" onclick="restoreCard(\''+d.id+'\',event)">＋ Add to dashboard</button>':'<button class="pcact" onclick="archiveCard(\''+d.id+'\',event)">Remove from dashboard</button>')+'<button class="pcdel" onclick="removeCard(\''+d.id+'\',event)">Delete for good</button></div></div>';
 }
+function dupCard(id,e){if(e)e.stopPropagation();var src=store.deals.find(x=>x.id===id);if(!src)return;var n=prompt('Name for the copy (keeps all the fees & details):','Copy of '+(src.name||'property'));if(n===null)return;var copy=JSON.parse(JSON.stringify(src));copy.id=uid();copy.name=(n&&n.trim())||('Copy of '+(src.name||'property'));copy.address=copy.name;copy.status='testing';store.deals.push(copy);store.current=copy.id;save();curTab='purchase';view='deal';render();window.scrollTo(0,0);toast('Copied — change the address & price');}
 function archiveCard(id,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.id===id);if(!d)return;d.status='archived';save();renderDash();toast('Off the dashboard — kept under Archived');}
 function restoreCard(id,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.id===id);if(!d)return;d.status='saved';save();renderDash();toast('Restored to the dashboard');}
 function removeCard(id,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.id===id);if(!confirm('Delete “'+((d&&d.name)||'this property')+'” for good? This cannot be undone — use Archive to keep it.'))return;store.deals=store.deals.filter(x=>x.id!==id);if(store.current===id)store.current=store.deals.length?store.deals[0].id:null;save();renderDash();}
@@ -482,7 +483,7 @@ function compareTable(sel){
 function renderDeal(){var d=deal();if(!d){goDash();return;}
   var h='<div class="appbar"><button class="ic" onclick="goDash()">‹ Properties</button>'+
     '<div class="ttl dealname" onclick="renameDeal()" style="flex:1;text-align:center;margin:0 8px">'+esc(d.name||'Untitled')+'<span>'+(d.mode==='btl'?'Buy to Let':'Flip')+' · '+statusOf(d)+' · tap to rename</span></div>'+
-    '<div class="menu"><button class="ic" onclick="toggleMenu(event)">···</button><div class="menu-pop" id="menuPop"><button onclick="exportPDF()">Export PDF</button><button onclick="exportJSON()">Backup</button><button onclick="document.getElementById(\'imp\').click()">Restore</button></div><input type="file" id="imp" accept="application/json" style="display:none" onchange="importJSON(event)"></div></div>';
+    '<div class="menu"><button class="ic" onclick="toggleMenu(event)">···</button><div class="menu-pop" id="menuPop"><button onclick="dupCard(store.current)">Duplicate this property</button><button onclick="exportPDF()">Export PDF</button><button onclick="exportJSON()">Backup</button><button onclick="document.getElementById(\'imp\').click()">Restore</button></div><input type="file" id="imp" accept="application/json" style="display:none" onchange="importJSON(event)"></div></div>';
   h+='<div class="controls"><div class="seg" id="modeSeg"><button data-m="flip" onclick="setMode(\'flip\')">Flip</button><button data-m="btl" onclick="setMode(\'btl\')">Buy to Let</button></div>'+
     '<button class="mini save" onclick="setStatus(\'saved\')">✓ Save</button><button class="mini" onclick="setStatus(\'archived\')">Archive</button><button class="mini del" onclick="delDeal()">Delete</button></div>';
   h+='<div class="stick"><div class="summary" id="summary"></div><div class="tabs" id="tabs"></div></div><div class="tabc" id="tabc"></div>';
