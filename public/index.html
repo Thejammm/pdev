@@ -124,6 +124,13 @@
   .pcard.flip{border-left:5px solid var(--flip)} .pcard.btl{border-left:5px solid var(--btl)}
   .pcard.flip .cardtog button.on{background:var(--flip);color:#fff} .pcard.btl .cardtog button.on{background:var(--btl);color:#fff}
   .tabs button.on.flip{background:var(--flip)} .tabs button.on.btl{background:var(--btl)}
+  .grp.na{opacity:.6}
+  .gtag{font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:20px;margin-left:8px;letter-spacing:.4px;vertical-align:middle}
+  .gtag.flip{background:var(--flipbg);color:var(--flip)} .gtag.btl{background:var(--btlbg);color:var(--btl)}
+  .nabox{font-size:11.5px;color:var(--muted);background:#f5f7fb;border-radius:8px;padding:8px 10px;margin:8px 0}
+  .fld.na{opacity:.6}
+  .ftag{font-size:9px;font-weight:800;padding:1px 7px;border-radius:20px;margin-left:6px;letter-spacing:.3px;vertical-align:middle}
+  .ftag.btl{background:var(--btlbg);color:var(--btl)} .ftag.flip{background:var(--flipbg);color:var(--flip)}
   /* collapsible group */
   .ghead{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:13px 2px;font-size:14px;font-weight:700}
   .ghead .gcx{color:#aab2c0;font-weight:800;transition:transform .15s}
@@ -352,19 +359,26 @@ function iBtn(f){return f.tip?'<button class="i" type="button" onclick="tipTog(t
 function tipTog(btn){var w=btn.closest('.fw,.ow');if(!w)return;var fh=w.querySelector('.fh');if(fh)fh.style.display=(fh.style.display==='none'||!fh.style.display)?'block':'none';}
 function fieldHTML(d,f){
   var v=d[f.k],ib=iBtn(f),hint=f.tip?'<div class="fh" style="display:none">'+esc(f.tip)+'</div>':'',body;
-  if(f.k==='postcode'){body='<div class="fld"><div class="l">'+f.label+ib+'</div><div class="affix"><input class="inp txt" inputmode="text" value="'+esc(v)+'" oninput="upd(\'postcode\',this.value)"></div></div><div id="mapLink">'+mapLinkHTML(v)+'</div>';}
+  var fmode=BTL_ONLY[f.k]?'btl':(FLIP_ONLY[f.k]?'flip':''),na=fmode&&fmode!==d.mode;
+  var lab=f.label+(na?'<span class="ftag '+fmode+'">'+(fmode==='btl'?'BTL only':'Flip only')+'</span>':'')+ib,fc='fld'+(na?' na':'');
+  if(f.k==='postcode'){body='<div class="'+fc+'"><div class="l">'+lab+'</div><div class="affix"><input class="inp txt" inputmode="text" value="'+esc(v)+'" oninput="upd(\'postcode\',this.value)"></div></div><div id="mapLink">'+mapLinkHTML(v)+'</div>';}
   else if(f.type==='pctdep'){var pp=num(d.purchasePrice),p=num(d.depositPct),amt=Math.round(pp*p/100);
-    body='<div class="fld"><div class="l">'+f.label+ib+'</div><div class="affix"><input id="dPct" class="inp" style="width:62px" inputmode="decimal" value="'+esc(v)+'" oninput="updDep(\'pct\',this.value)"><span class="u">%</span><span class="u">£</span><input id="dAmt" class="inp" style="width:90px" inputmode="decimal" value="'+esc(amt)+'" oninput="updDep(\'amt\',this.value)"></div></div>';}
+    body='<div class="'+fc+'"><div class="l">'+lab+'</div><div class="affix"><input id="dPct" class="inp" style="width:62px" inputmode="decimal" value="'+esc(v)+'" oninput="updDep(\'pct\',this.value)"><span class="u">%</span><span class="u">£</span><input id="dAmt" class="inp" style="width:90px" inputmode="decimal" value="'+esc(amt)+'" oninput="updDep(\'amt\',this.value)"></div></div>';}
   else if(f.type==='select'){var opts=f.k==='mortgageType'?[['btl','Buy to Let'],['bridging','Bridging'],['cash','Cash']]:f.k==='mortgageBasis'?[['interest','Interest only'],['repayment','Repayment']]:TYPES.map(t=>[t,t]);
-    body='<div class="fld"><div class="l">'+f.label+ib+'</div><select class="inp" oninput="upd(\''+f.k+'\',this.value)">'+opts.map(x=>'<option value="'+x[0]+'"'+(v===x[0]?' selected':'')+'>'+x[1]+'</option>').join('')+'</select></div>';}
+    body='<div class="'+fc+'"><div class="l">'+lab+'</div><select class="inp" oninput="upd(\''+f.k+'\',this.value)">'+opts.map(x=>'<option value="'+x[0]+'"'+(v===x[0]?' selected':'')+'>'+x[1]+'</option>').join('')+'</select></div>';}
   else{var isText=f.type==='text',aL=f.unit==='£'?'<span class="u">£</span>':'',aR=(f.unit&&f.unit!=='£')?'<span class="u">'+f.unit+'</span>':'';
-    body='<div class="fld"><div class="l">'+f.label+ib+'</div><div class="affix">'+aL+'<input class="inp'+(isText?' txt':'')+'" inputmode="'+(isText?'text':'decimal')+'" value="'+esc(v)+'" oninput="upd(\''+f.k+'\',this.value)">'+aR+'</div></div>';}
+    body='<div class="'+fc+'"><div class="l">'+lab+'</div><div class="affix">'+aL+'<input class="inp'+(isText?' txt':'')+'" inputmode="'+(isText?'text':'decimal')+'" value="'+esc(v)+'" oninput="upd(\''+f.k+'\',this.value)">'+aR+'</div></div>';}
   return '<div class="fw">'+body+hint+'</div>';
 }
 var grpOpen={};
+var BTL_ONLY={monthlyRent:1,refiLTV:1},FLIP_ONLY={};
 function groupCard(d,g){
-  var det=detOpen[g.id],open=grpOpen[g.id]!==false;
-  return '<div class="grp '+(open?'open':'closed')+'" id="grp-'+g.id+'"><div class="ghead" onclick="toggleGrp(\''+g.id+'\')"><span>'+g.t+'</span><span class="gcx">›</span></div><div class="gbody">'+
+  var applies=g.modes==='both'||g.modes===d.mode;
+  var det=detOpen[g.id],open=applies?(grpOpen[g.id]!==false):(grpOpen[g.id]===true);
+  var gmode=g.modes==='flip'?'flip':(g.modes==='btl'?'btl':'');
+  var tag=gmode?'<span class="gtag '+gmode+'">'+(gmode==='flip'?'FLIP':'LET')+'</span>':'';
+  var nb=applies?'':'<div class="nabox">Only used in '+(g.modes==='flip'?'Flip':'Buy to Let')+' mode — ignored while you’re in '+(d.mode==='flip'?'Flip':'Buy to Let')+'.</div>';
+  return '<div class="grp '+(open?'open':'closed')+(applies?'':' na')+'" id="grp-'+g.id+'"><div class="ghead" onclick="toggleGrp(\''+g.id+'\')"><span>'+g.t+tag+'</span><span class="gcx">›</span></div><div class="gbody">'+nb+
     g.fields.map(f=>fieldHTML(d,f)).join('')+
     '<div class="det-tog'+(det?' open':'')+'" onclick="toggleDet(\''+g.id+'\')"><span class="cx">›</span>Show figures</div>'+
     '<div class="det'+(det?' open':'')+'" id="det-'+g.id+'"></div>'+
@@ -375,7 +389,7 @@ function renderTab(){
   var d=deal(),c=calc(d,ov()),h='';
   if(curTab==='summary')h=summaryTab(c,d);
   else if(curTab==='risk')h=riskTab();
-  else{var gs=GROUPS.filter(g=>g.tab===curTab&&vis(g,d.mode));
+  else{var gs=GROUPS.filter(g=>g.tab===curTab);
     gs.forEach(g=>{h+=groupCard(d,g);});
     if(curTab==='costs')h+='<button class="pdfbtn" onclick="exportPDF()">Export full appraisal (PDF)</button>';}
   document.getElementById('tabc').innerHTML=h;
