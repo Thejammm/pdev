@@ -134,6 +134,20 @@
   .i:active{background:#ccd4e0}
   .fh{font-size:11.5px;color:#57606e;background:#f4f7fb;border-radius:8px;padding:7px 10px;margin:0 0 9px;line-height:1.45}
   .scen{display:flex;justify-content:space-between;align-items:center;background:var(--amberbg);color:var(--amber);border-radius:9px;padding:7px 11px;font-size:11.5px;font-weight:800;margin-top:9px;cursor:pointer}
+  /* portfolio / borrowing */
+  .folio{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:14px;border-left:5px solid var(--btl)}
+  .folio h4{margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--faint);font-weight:800}
+  .frow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:14px}
+  .frow b{font-size:17px;font-weight:800;color:var(--navy)}
+  .frow.net b{color:var(--green)}
+  .btoggle{width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;margin:9px 0 4px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .btoggle.on{background:var(--btlbg);color:var(--btl);border-color:#bfe0d6}
+  .dot2{width:34px;height:20px;border-radius:20px;background:#cfd6e0;position:relative;flex:none}
+  .btoggle.on .dot2{background:var(--btl)}
+  .dot2:after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;left:2px;transition:.15s}
+  .btoggle.on .dot2:after{left:16px}
+  .fnote{font-size:11px;color:var(--muted);margin-top:7px}
+  .fnote a{color:var(--accent);cursor:pointer;font-weight:700}
 </style>
 </head>
 <body>
@@ -145,6 +159,7 @@ function lsGet(k){try{return HAS_LS?localStorage.getItem(k):MEM[k];}catch(e){ret
 function lsSet(k,v){try{if(HAS_LS)localStorage.setItem(k,v);else MEM[k]=v;}catch(e){MEM[k]=v;}}
 var KEY='pdevPro_v1';var store={deals:[],current:null};
 function load(){var r=lsGet(KEY);if(r){try{store=JSON.parse(r);}catch(e){}}if(!store.deals)store.deals=[];
+  if(!store.borrow)store.borrow={amount:165000,monthly:914,on:false};
   store.deals.forEach(d=>{if(!d.status)d.status='saved';});
   if(!store.deals.length){var d=defDeal();d.status='saved';store.deals.push(d);store.current=d.id;}
   if(!store.current)store.current=store.deals.length?store.deals[0].id:null;}
@@ -288,7 +303,7 @@ function renderDash(){
   var list=store.deals.filter(d=>statusOf(d)===dashFilter);
   var h='<div class="appbar"><div class="ttl">Your properties<span>'+counts.saved+' saved · '+counts.testing+' in progress</span></div>'+
     '<div class="menu"><button class="ic" onclick="toggleMenu(event)">···</button><div class="menu-pop" id="menuPop"><button onclick="exportJSON()">Download backup</button><button onclick="document.getElementById(\'imp\').click()">Restore backup</button></div><input type="file" id="imp" accept="application/json" style="display:none" onchange="importJSON(event)"></div></div>';
-  h+='<div class="dashwrap"><div class="filters">'+['saved','testing','archived'].map(f=>'<button class="chip'+(dashFilter===f?' on':'')+'" onclick="setFilter(\''+f+'\')">'+({saved:'Saved',testing:'In progress',archived:'Archived'}[f])+' ('+counts[f]+')</button>').join('')+'</div>';
+  h+='<div class="dashwrap">'+folioHTML()+'<div class="filters">'+['saved','testing','archived'].map(f=>'<button class="chip'+(dashFilter===f?' on':'')+'" onclick="setFilter(\''+f+'\')">'+({saved:'Saved',testing:'In progress',archived:'Archived'}[f])+' ('+counts[f]+')</button>').join('')+'</div>';
   h+=list.length?list.map(cardHTML).join(''):'<div class="empty">No '+({saved:'saved',testing:'in-progress',archived:'archived'}[dashFilter])+' properties here yet.<br>Tap “New property” to start one.</div>';
   h+='<button class="newbtn" onclick="newDeal()">＋ New property</button></div>';
   document.getElementById('app').innerHTML=h;
@@ -300,6 +315,20 @@ function cardHTML(d){var c=calc(d),isB=d.mode==='btl',val=isB?c.netCF:c.profit;
     '<div class="pcright"><div class="cardtog" onclick="event.stopPropagation()"><button class="'+(!isB?'on':'')+'" onclick="cardMode(\''+d.id+'\',\'flip\',event)">Flip</button><button class="'+(isB?'on':'')+'" onclick="cardMode(\''+d.id+'\',\'btl\',event)">BTL</button></div>'+
     '<div class="pcbig '+(val>=0?'pos':'neg')+'">'+big+'</div><div class="pclab">'+lab+'</div></div></div>';
 }
+function folioHTML(){
+  var saved=store.deals.filter(d=>statusOf(d)==='saved'&&d.mode==='btl');
+  var mo=0;saved.forEach(d=>{mo+=calc(d).netCF;});
+  var b=store.borrow,off=num(b.monthly),net=mo-off;
+  var h='<div class="folio"><h4>Long-term plan — rental income</h4>'+
+    '<div class="frow"><span>Monthly income'+(saved.length?' ('+saved.length+' rental'+(saved.length>1?'s':'')+')':' (no saved rentals yet)')+'</span><b>'+money(mo)+'</b></div>'+
+    '<div class="frow"><span>Weekly</span><b>'+money(mo*12/52)+'</b></div>'+
+    '<button class="btoggle'+(b.on?' on':'')+'" onclick="toggleBorrow()"><span>Offset my borrowing · −'+money(off)+'/mo</span><span class="dot2"></span></button>';
+  if(b.on)h+='<div class="frow net"><span>After borrowing</span><b>'+money(net)+'/mo</b></div><div class="frow net"><span>Weekly after borrowing</span><b>'+money(net*12/52)+'</b></div>';
+  h+='<div class="fnote">'+money(num(b.amount))+' borrowed · '+money(off)+'/mo · <a onclick="editBorrow()">edit</a> · counts your saved Buy-to-Let cash flow</div></div>';
+  return h;
+}
+function toggleBorrow(){store.borrow.on=!store.borrow.on;save();renderDash();}
+function editBorrow(){var a=prompt('Total capital you have borrowed (£):',store.borrow.amount);if(a===null)return;var mo=prompt('What it costs you per month (£):',store.borrow.monthly);if(mo===null)return;store.borrow.amount=num(a);store.borrow.monthly=num(mo);save();renderDash();}
 function cardMode(id,m,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.id===id);if(d){d.mode=m;save();renderDash();}}
 function setFilter(f){dashFilter=f;renderDash();}
 function openDeal(id){store.current=id;view='deal';curTab='summary';sens={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};stressOn=null;render();window.scrollTo(0,0);}
@@ -378,6 +407,7 @@ function summaryTab(c,d){var isB=c.isBtl,s=healthScores(c),col=s.overall>=70?'gr
   var cv={green:'var(--greenbg)',amber:'var(--amberbg)',red:'var(--redbg)'}[col],cf={green:'var(--green)',amber:'var(--amber)',red:'var(--red)'}[col];
   var h='<div class="score"><div class="ring" style="background:'+cv+';color:'+cf+'">'+s.overall+'</div><div class="t">Overall deal score<b>'+(s.overall>=70?'Strong deal':s.overall>=45?'Marginal — negotiate':'Poor — re-cut or walk')+'</b></div></div>';
   h+='<div class="hbs">'+s.items.map(it=>'<div class="hb"><span class="k">'+it.k+'</span><span class="p '+it.band+'">'+it.word+'</span></div>').join('')+'</div>';
+  if(isB)h+='<h2 class="sec">Rent vs mortgage — every month</h2><div class="kv">'+O('Rent received',money(c.rentM),'','','The monthly rent you expect once done up.')+O('Mortgage payment','−'+money(c.monthlyPay),'neg','','Your monthly mortgage payment on this property.')+O('Running costs','−'+money(c.opMonthly),'neg','','Management, maintenance, void allowance, insurance, gas, electrical, licensing, ground rent and service charge.')+O('Net cash flow',money(c.netCF),c.netCF>=0?'pos':'neg',true,'Rent − mortgage − running costs. This is what you actually keep each month.')+'</div>';
   h+='<h2 class="sec">Where the money goes</h2><div class="kv">'+O('Purchase price',money(c.pp))+O('Acquisition',money(c.acqTotal),'','','Stamp duty + solicitor + searches + survey + land registry + other.')+O('Refurbishment',money(c.refurb),'','','All refurbishment lines + contingency.')+O('Finance',money(c.financeCosts),'','','Fees + interest over the whole project.')+O('Holding',money(c.holdTotNonMort),'','','Monthly holding (excl. mortgage) × months.')+(isB?'':O('Selling',money(c.sellTotal),'','','Agent fee + solicitor + EPC + marketing + staging + other.'))+O('Total project cost',money(c.totalProjectCost),'',true,'Purchase + acquisition + refurbishment + finance + holding'+(isB?'.':' + selling.'))+'</div>';
   h+='<h2 class="sec">Returns</h2><div class="kv">'+(isB?O('Annual cash flow',money(c.annualCF),c.annualCF>=0?'pos':'neg',true,'Monthly net cash flow × 12.')+O('Cash-on-cash',pct(c.coc),'','','Annual cash flow ÷ total cash invested.')+O('Gross / net yield',pct(c.grossYield)+' / '+pct(c.netYield),'','','Gross: annual rent ÷ price. Net: income after operating costs ÷ money in.')+O('Equity created',money(c.equity),'','','End value − the new mortgage after you refinance.')+O('Capital left in',money(c.capitalLeftIn),'','','Cash invested − cash released when you refinance.')+O('Return on cash left in',pct(c.cocLeftIn),'','','Annual cash flow ÷ the capital still left in the deal.'):O('Expected profit',money(c.profit),c.profit>=0?'pos':'neg',true,'End value (GDV) − total project cost.')+O('ROI',pct(c.roi),'','','Profit ÷ total cash invested.')+O('ROCE',pct(c.roce),'','','Profit ÷ total project cost.')+O('Profit / month',money(c.profitPM),'','','Profit ÷ project months.')+O('Profit margin (on GDV)',pct(c.margin),'','','Profit ÷ end value.')+O('Break-even sale',money(c.breakEven),'','','The sale price where profit is exactly zero, allowing for the agent’s %.'))+O('Total cash needed',money(c.cashInvested),'','','Deposit + acquisition + finance fees + refurbishment + holding (excl. mortgage).')+'</div>';
   h+='<h2 class="sec">Maximum offer</h2><div class="kv"><div class="hint">The most you should offer to still hit your target '+(isB?'yield.':'profit.')+'</div>'+O('Maximum offer price',money(c.mao),'',true,isB?'Annual rent ÷ your target yield.':'End value − target profit − refurb − selling − holding − finance − acquisition.')+
@@ -430,7 +460,7 @@ function repaint(){var d=deal(),active=sensActive(),c=calc(d,ov());
   var big=isB?c.annualCF:c.profit,lab=isB?'Expected annual cash flow':'Expected profit';
   var sm=document.getElementById('summary');if(sm){sm.className='summary '+d.mode;
   sm.innerHTML='<div class="top"><div><div class="lab">'+lab+'</div><div class="big '+(big>=0?'pos':'neg')+'">'+money(big)+'</div></div><div style="text-align:right"><span class="modetag '+d.mode+'">'+(isB?'BUY TO LET':'FLIP')+'</span><div style="margin-top:7px"><span class="pill '+band+'">'+(band==='green'?'Strong':band==='amber'?'Marginal':'Poor')+' · '+s.overall+'</span></div></div></div>'+
-    '<div class="mini">'+(isB?'Yield <b>'+pct(c.grossYield)+'</b>':'ROI <b>'+pct(c.roi)+'</b>')+' · Cash <b>'+money(c.cashInvested)+'</b> · Max offer <b>'+money(c.mao)+'</b></div>'+
+    '<div class="mini">'+(isB?'Rent <b>'+money(c.rentM)+'</b> · Mortgage <b>'+money(c.monthlyPay)+'</b> · Net <b>'+money(c.netCF)+'/mo</b>':'ROI <b>'+pct(c.roi)+'</b> · Cash <b>'+money(c.cashInvested)+'</b> · Max offer <b>'+money(c.mao)+'</b>')+'</div>'+
     (active?'<div class="scen" onclick="resetSens()"><span>⚠ What-if scenario applied</span><span>Reset ✕</span></div>':'');}
   GROUPS.forEach(g=>{var el=document.getElementById('det-'+g.id);if(el)el.innerHTML=detFor(g.id,c);});
   var ml=document.getElementById('mapLink');if(ml)ml.innerHTML=mapLinkHTML(d.postcode);
