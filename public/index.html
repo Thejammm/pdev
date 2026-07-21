@@ -6,174 +6,145 @@
 <title>PropDev — Developer Appraisal</title>
 <style>
   :root{
-    --ink:#182031;--muted:#6b7280;--line:#e6e9ef;--bg:#eef1f6;--card:#fff;
-    --navy:#1f3864;--navy2:#2e5496;--blue:#1155a8;--bluebg:#e8f0fb;
-    --green:#1f7a52;--greenbg:#e6f4ec;--red:#b23b3b;--redbg:#fbeaea;--amber:#9a6a00;--amberbg:#fdf3dd;
+    --ink:#1c2433;--muted:#7a8290;--faint:#aab2bf;--line:#eceef3;--bg:#f4f6fa;--card:#fff;
+    --navy:#1f3864;--navy2:#33589a;--accent:#2e5ba8;
+    --green:#1f7a52;--greenbg:#eaf5ee;--red:#b23b3b;--redbg:#fbeceb;--amber:#8a5d00;--amberbg:#fdf4de;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);
-    background:var(--bg);font-size:15px;line-height:1.45;padding-bottom:80px}
-  .wrap{max-width:920px;margin:0 auto;padding:0 12px}
-  .appbar{position:sticky;top:0;z-index:40;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;
-    padding:12px 14px;box-shadow:0 2px 8px rgba(20,30,50,.18)}
-  .appbar .row{max-width:920px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-  .appbar h1{font-size:16px;margin:0;font-weight:800;letter-spacing:.2px}
-  .appbar .sub{font-size:11px;opacity:.85}
-  .btnw{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:9px;
-    padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer}
-  .btnw:active{transform:scale(.98)}
-  /* mode + deals bar */
-  .barrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0 6px}
-  .seg{display:inline-flex;background:#dde3ec;border-radius:11px;padding:3px}
-  .seg button{border:none;background:none;padding:9px 16px;font-size:13px;font-weight:800;color:#5b6675;border-radius:9px;cursor:pointer}
-  .seg button.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(20,30,50,.14)}
-  select.deals{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700;color:var(--navy);background:#fff}
-  .mini{background:#fff;border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer}
-  /* progress */
-  .prog{height:8px;background:#dde3ec;border-radius:6px;overflow:hidden;margin:8px 0 14px}
-  .prog > div{height:100%;background:linear-gradient(90deg,var(--navy2),var(--green));width:0%;transition:width .3s}
-  /* accordion */
-  .acc{background:#fff;border:1px solid var(--line);border-radius:14px;margin-bottom:11px;overflow:hidden}
-  .acc > .head{display:flex;align-items:center;gap:10px;padding:14px;cursor:pointer;user-select:none}
-  .acc > .head .n{width:26px;height:26px;border-radius:8px;background:var(--navy);color:#fff;font-size:12px;font-weight:800;
-    display:flex;align-items:center;justify-content:center;flex:none}
-  .acc > .head .t{font-weight:800;font-size:14.5px;flex:1}
-  .acc > .head .st{width:11px;height:11px;border-radius:50%;background:#cfd6e0;flex:none}
-  .acc > .head .car{color:#aab2c0;font-weight:800;transition:transform .18s}
-  .acc.open > .head .car{transform:rotate(90deg)}
-  .acc > .body{display:none;padding:2px 14px 14px}
-  .acc.open > .body{display:block}
-  .st.green{background:var(--green)} .st.amber{background:var(--amber)} .st.red{background:var(--red)}
-  /* fields */
-  .fld{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #f2f4f8}
-  .fld:last-child{border-bottom:none}
-  .fld .lab{font-size:13.5px;flex:1;min-width:0}
-  .fld .lab .q{display:inline-flex;width:15px;height:15px;border-radius:50%;background:#e3e8f0;color:#5b6675;font-size:10px;
-    font-weight:800;align-items:center;justify-content:center;cursor:help;margin-left:5px;vertical-align:middle}
-  .badges{display:flex;gap:4px;margin-top:3px;flex-wrap:wrap}
-  .bdg{font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:10px;letter-spacing:.2px}
-  .bdg.low{background:var(--greenbg);color:var(--green)} .bdg.med{background:var(--amberbg);color:var(--amber)} .bdg.high{background:var(--redbg);color:var(--red)}
-  .bdg.fixed{background:#eef1f6;color:#5b6675} .bdg.estimated{background:var(--bluebg);color:var(--blue)} .bdg.variable{background:var(--amberbg);color:var(--amber)}
-  .bdg.ctrl{background:var(--greenbg);color:var(--green)} .bdg.noctrl{background:#eceff3;color:#8a93a1}
-  .inp{width:130px;text-align:right;border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:15px;
-    font-variant-numeric:tabular-nums;background:#fbfcfe;color:var(--navy);font-weight:700}
+    background:var(--bg);font-size:15px;line-height:1.5;padding-bottom:60px}
+  .wrap{max-width:760px;margin:0 auto}
+  .appbar{background:var(--card);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;
+    align-items:center;justify-content:space-between;gap:10px}
+  .appbar .ttl{font-size:15px;font-weight:700;letter-spacing:.2px}
+  .appbar .ttl span{color:var(--muted);font-weight:500;font-size:12px;display:block;margin-top:1px}
+  .menu{position:relative}
+  .ic{background:none;border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:7px 10px;font-size:13px;font-weight:600;cursor:pointer}
+  .menu-pop{position:absolute;right:0;top:40px;background:#fff;border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 10px 30px rgba(20,30,50,.16);min-width:190px;overflow:hidden;display:none;z-index:60}
+  .menu-pop.open{display:block}
+  .menu-pop button{display:block;width:100%;text-align:left;background:none;border:none;padding:12px 15px;font-size:14px;color:var(--ink);cursor:pointer;border-bottom:1px solid var(--line)}
+  .menu-pop button:last-child{border-bottom:none}
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:12px 16px 4px}
+  select.deals{border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:13px;font-weight:600;color:var(--ink);background:#fff;max-width:190px}
+  .mini{background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
+  .seg{display:inline-flex;background:#e7ebf2;border-radius:10px;padding:3px;margin-left:auto}
+  .seg button{border:none;background:none;padding:7px 13px;font-size:13px;font-weight:700;color:#67707f;border-radius:8px;cursor:pointer}
+  .seg button.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(20,30,50,.12)}
+  .stick{position:sticky;top:0;z-index:30;background:var(--bg);padding:10px 16px 0;border-bottom:1px solid var(--line)}
+  .summary{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px}
+  .summary .top{display:flex;justify-content:space-between;align-items:flex-start}
+  .summary .lab{font-size:12px;color:var(--muted);font-weight:600}
+  .summary .big{font-size:27px;font-weight:800;letter-spacing:-.6px;margin:2px 0 0}
+  .summary .big.pos{color:var(--green)} .summary .big.neg{color:var(--red)}
+  .pill{font-size:11px;font-weight:800;padding:4px 11px;border-radius:20px;white-space:nowrap}
+  .pill.green{background:var(--greenbg);color:var(--green)} .pill.amber{background:var(--amberbg);color:var(--amber)} .pill.red{background:var(--redbg);color:var(--red)}
+  .summary .mini{font-size:12.5px;color:var(--muted);margin-top:8px;font-variant-numeric:tabular-nums}
+  .summary .mini b{color:var(--ink);font-weight:700}
+  .tabs{display:flex;gap:4px;overflow-x:auto;padding:11px 0 9px;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs button{border:none;background:none;color:var(--muted);font-size:13.5px;font-weight:700;padding:7px 13px;border-radius:20px;cursor:pointer;white-space:nowrap;flex:none}
+  .tabs button.on{background:var(--navy);color:#fff}
+  .tabc{padding:14px 16px 24px}
+  .grp{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:5px 15px;margin-bottom:12px}
+  .grp h3{font-size:13.5px;font-weight:700;margin:13px 2px 5px;letter-spacing:.1px}
+  .fld{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 2px;border-bottom:1px solid var(--line)}
+  .fld:last-of-type{border-bottom:none}
+  .fld .l{font-size:14px;color:var(--ink)}
+  .fld .l .q{display:inline-flex;width:15px;height:15px;border-radius:50%;background:#eef1f6;color:#8792a2;font-size:10px;font-weight:800;align-items:center;justify-content:center;cursor:help;margin-left:5px;vertical-align:middle}
+  .inp{width:128px;text-align:right;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:15px;font-variant-numeric:tabular-nums;background:#fbfcfe;color:var(--navy);font-weight:700}
   .inp:focus{outline:none;border-color:var(--navy2);background:#fff}
-  .inp.txt{width:180px;text-align:left;color:var(--ink)}
-  select.inp{width:auto;min-width:130px}
+  .inp.txt{width:190px;text-align:left;color:var(--ink);font-weight:600}
+  select.inp{width:auto;min-width:128px;font-weight:700}
   .affix{display:flex;align-items:center;gap:4px}
-  .affix .u{font-size:12px;color:var(--muted);font-weight:700}
-  textarea.notes{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px;font-size:13px;background:#fbfcfe;
-    margin-top:8px;font-family:inherit;resize:vertical;min-height:46px}
-  /* outputs */
-  .outs{background:#f7f9fc;border:1px dashed var(--line);border-radius:11px;padding:6px 12px;margin-top:10px}
-  .out{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eef1f6;font-size:13.5px}
-  .out:last-child{border-bottom:none}
-  .out .v{font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums}
-  .out .v.pos{color:var(--green)} .out .v.neg{color:var(--red)}
-  .out.big .v{font-size:16px}
-  /* dashboard */
-  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px}
-  .kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 12px}
-  .kpi .k{font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.3px}
-  .kpi .v{font-size:19px;font-weight:800;color:var(--navy);margin-top:3px;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
-  .kpi .v.pos{color:var(--green)} .kpi .v.neg{color:var(--red)}
-  .kpi.hi{background:linear-gradient(135deg,#eef4fb,#e6f4ec);border-color:#cfe3d6}
-  .badgesrow{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;margin-top:10px}
-  .hb{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between}
-  .hb .k{font-size:12px;font-weight:700}
-  .hb .p{font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px}
+  .u{font-size:12px;color:var(--muted);font-weight:700}
+  .det-tog{display:flex;align-items:center;gap:6px;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;padding:11px 2px 9px}
+  .det-tog .cx{transition:transform .15s;font-weight:800}
+  .det-tog.open .cx{transform:rotate(90deg)}
+  .det{display:none;background:#f7f9fc;border:1px dashed var(--line);border-radius:11px;padding:4px 13px;margin:0 0 10px}
+  .det.open{display:block}
+  .o{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #eef1f6;font-size:13.5px}
+  .o:last-child{border-bottom:none}
+  .o .v{font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums}
+  .o .v.pos{color:var(--green)} .o .v.neg{color:var(--red)}
+  .o.big{padding:9px 0} .o.big .v{font-size:16px}
+  textarea.notes{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:13px;background:#fbfcfe;margin:6px 0 10px;font-family:inherit;resize:vertical;min-height:44px}
+  .score{display:flex;align-items:center;gap:15px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:12px}
+  .ring{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;flex:none}
+  .score .t b{display:block;font-size:16px} .score .t{font-size:13px;color:var(--muted)}
+  .hbs{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+  .hb{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px;display:flex;justify-content:space-between;align-items:center}
+  .hb .k{font-size:13px;font-weight:600} .hb .p{font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px}
   .p.green{background:var(--greenbg);color:var(--green)} .p.amber{background:var(--amberbg);color:var(--amber)} .p.red{background:var(--redbg);color:var(--red)}
-  .score{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:11px}
-  .score .ring{width:74px;height:74px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;flex:none}
-  .score .lab{font-size:13px;color:var(--muted)}
-  .score .lab b{display:block;font-size:16px;color:var(--ink)}
-  /* sliders */
-  .slider{padding:8px 0;border-bottom:1px solid #f2f4f8}
-  .slider .top{display:flex;justify-content:space-between;font-size:13px;font-weight:700}
-  .slider input[type=range]{width:100%;margin-top:6px;accent-color:var(--navy2)}
-  .slider .val{color:var(--navy2);font-weight:800}
-  .stressgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:4px 0 10px}
-  .stress{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px;font-size:12.5px;font-weight:700;color:var(--navy);cursor:pointer;text-align:left}
-  .stress:active{transform:scale(.98)}
+  .kv{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:5px 15px;margin-bottom:12px}
+  .slider{padding:9px 2px;border-bottom:1px solid var(--line)}
+  .slider .t{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600}
+  .slider .t .val{color:var(--accent);font-weight:800}
+  .slider input[type=range]{width:100%;margin-top:7px;accent-color:var(--navy2)}
+  .stressgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 4px}
+  .stress{border:1px solid var(--line);background:#fff;border-radius:10px;padding:11px;font-size:12.5px;font-weight:700;color:var(--navy);cursor:pointer;text-align:left}
   .stress.on{background:var(--navy);color:#fff;border-color:var(--navy)}
-  .tbl{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
-  .tbl td{padding:6px 4px;border-bottom:1px solid #eef1f6}
+  .tbl{width:100%;border-collapse:collapse;font-size:13px}
+  .tbl td{padding:7px 2px;border-bottom:1px solid var(--line)}
   .tbl td:last-child{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
-  .tbl tr.tot td{border-top:2px solid var(--navy);font-weight:800;color:var(--navy);padding-top:8px;border-bottom:none}
-  .hint{font-size:11.5px;color:var(--muted);margin:2px 0 6px}
-  .note{font-size:12px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin:10px 0}
-  .actions{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 4px}
-  .btn{border:none;border-radius:11px;padding:12px 16px;font-size:13.5px;font-weight:800;cursor:pointer}
-  .btn.pri{background:var(--navy);color:#fff} .btn.gy{background:#eceff3;color:#4b5563} .btn.dl{background:var(--redbg);color:var(--red)}
-  h2.sec{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:18px 2px 8px}
+  .tbl tr.tot td{border-top:2px solid var(--navy);font-weight:800;color:var(--navy);border-bottom:none;padding-top:8px}
+  .hint{font-size:12px;color:var(--muted);margin:2px 2px 10px;line-height:1.5}
+  h2.sec{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--faint);font-weight:800;margin:16px 2px 8px}
+  .note{font-size:12px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-top:12px;line-height:1.5}
+  .pdfbtn{width:100%;background:var(--navy);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;margin-top:6px}
 </style>
 </head>
 <body>
-
-<div class="appbar">
-  <div class="row">
-    <div><h1>PropDev · Developer Appraisal</h1><div class="sub" id="sub">Feasibility & risk modelling</div></div>
-    <div style="display:flex;gap:8px">
-      <button class="btnw" onclick="exportPDF()">⬇︎ PDF</button>
-      <button class="btnw" onclick="exportJSON()">⬇︎ Backup</button>
-      <button class="btnw" onclick="document.getElementById('imp').click()">⬆︎ Restore</button>
+<div class="wrap">
+  <div class="appbar">
+    <div class="ttl">PropDev · Appraisal<span id="sub">Feasibility &amp; risk</span></div>
+    <div class="menu">
+      <button class="ic" onclick="toggleMenu(event)">···</button>
+      <div class="menu-pop" id="menuPop">
+        <button onclick="exportPDF()">Export appraisal (PDF)</button>
+        <button onclick="exportJSON()">Download backup</button>
+        <button onclick="document.getElementById('imp').click()">Restore backup</button>
+      </div>
       <input type="file" id="imp" accept="application/json" style="display:none" onchange="importJSON(event)">
     </div>
   </div>
-</div>
-
-<div class="wrap">
-  <div class="barrow">
-    <div class="seg" id="modeSeg">
-      <button data-m="flip" onclick="setMode('flip')">Flip (Buy·Refurb·Sell)</button>
-      <button data-m="btl" onclick="setMode('btl')">Buy to Let</button>
-    </div>
+  <div class="controls">
     <select class="deals" id="dealSel" onchange="switchDeal(this.value)"></select>
     <button class="mini" onclick="newDeal()">＋ New</button>
-    <button class="mini" onclick="renameDeal()">✎ Rename</button>
-    <button class="mini" onclick="delDeal()">🗑</button>
+    <button class="mini" onclick="renameDeal()">Rename</button>
+    <button class="mini" onclick="delDeal()">Delete</button>
+    <div class="seg" id="modeSeg">
+      <button data-m="flip" onclick="setMode('flip')">Flip</button>
+      <button data-m="btl" onclick="setMode('btl')">Buy to Let</button>
+    </div>
   </div>
-  <div class="prog"><div id="progbar"></div></div>
-
-  <div id="sections"></div>
-
-  <div class="actions">
-    <button class="btn gy" onclick="expandAll(true)">Expand all</button>
-    <button class="btn gy" onclick="expandAll(false)">Collapse all</button>
-    <button class="btn pri" onclick="exportPDF()">⬇︎ Export full appraisal (PDF)</button>
+  <div class="stick">
+    <div class="summary" id="summary"></div>
+    <div class="tabs" id="tabs"></div>
   </div>
-  <div class="note">Illustrative planning figures only — not financial or tax advice. Stamp Duty shown at additional-property rates (incl. surcharge). Confirm financing with a broker and tax with an accountant.</div>
+  <div class="tabc" id="tabc"></div>
 </div>
 
 <script>
-/* ============================ storage ============================ */
 var MEM={};var HAS_LS=(function(){try{localStorage.setItem('__t','1');localStorage.removeItem('__t');return true;}catch(e){return false;}})();
 function lsGet(k){try{return HAS_LS?localStorage.getItem(k):MEM[k];}catch(e){return MEM[k];}}
 function lsSet(k,v){try{if(HAS_LS)localStorage.setItem(k,v);else MEM[k]=v;}catch(e){MEM[k]=v;}}
-var KEY='pdevPro_v1';
-var store={deals:[],current:null};
+var KEY='pdevPro_v1';var store={deals:[],current:null};
 function load(){var r=lsGet(KEY);if(r){try{store=JSON.parse(r);}catch(e){}}if(!store.deals)store.deals=[];
   if(!store.deals.length){var d=defDeal();store.deals.push(d);store.current=d.id;}
   if(!store.current||!store.deals.find(x=>x.id===store.current))store.current=store.deals[0].id;}
 function save(){lsSet(KEY,JSON.stringify(store));}
 function deal(){return store.deals.find(x=>x.id===store.current);}
 function uid(){return 'd'+Date.now()+Math.floor(Math.random()*1000);}
-
-/* ============================ helpers ============================ */
 function num(v){if(typeof v==='string')v=v.replace(/[£,\s]/g,'');var x=parseFloat(v);return isNaN(x)?0:x;}
 function money(n){if(n===Infinity)return '∞';if(isNaN(n)||n==null)return '—';var s=Math.round(Math.abs(n)).toLocaleString('en-GB');return (n<0?'−£':'£')+s;}
-function money1(n){return money(n);}
 function pct(n){if(isNaN(n)||!isFinite(n))return '—';return (n*100).toFixed(1)+'%';}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
 function today(){var d=new Date();return d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});}
-function sdlt(price){var b=[[0,125000,.05],[125000,250000,.07],[250000,925000,.10],[925000,1500000,.15],[1500000,1e12,.17]];
-  var t=0;for(var i=0;i<b.length;i++)t+=Math.max(0,Math.min(price,b[i][1])-b[i][0])*b[i][2];return t;}
+function sdlt(p){var b=[[0,125000,.05],[125000,250000,.07],[250000,925000,.10],[925000,1500000,.15],[1500000,1e12,.17]];var t=0;for(var i=0;i<b.length;i++)t+=Math.max(0,Math.min(p,b[i][1])-b[i][0])*b[i][2];return t;}
 function amortPay(P,r,n){if(P<=0)return 0;if(r<=0)return P/n;return P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);}
-function amortBal(P,r,n,after){if(P<=0)return 0;if(r<=0)return Math.max(0,P-(P/n)*after);var pay=amortPay(P,r,n);
-  var bal=P;for(var i=0;i<after&&i<n;i++)bal=bal*(1+r)-pay;return Math.max(0,bal);}
-
-/* ============================ defaults ============================ */
+function amortBal(P,r,n,a){if(P<=0)return 0;if(r<=0)return Math.max(0,P-(P/n)*a);var pay=amortPay(P,r,n),bal=P;for(var i=0;i<a&&i<n;i++)bal=bal*(1+r)-pay;return Math.max(0,bal);}
 function defDeal(){return{id:uid(),name:'New appraisal',mode:'flip',
   address:'',purchasePrice:200000,offerPrice:190000,marketValue:220000,gdv:275000,monthlyRent:1250,
   propertyType:'Terraced house',floorArea:90,bedrooms:3,bathrooms:1,
@@ -186,506 +157,271 @@ function defDeal(){return{id:uid(),name:'New appraisal',mode:'flip',
   agentPct:1.5,sellSolicitor:1200,epc:100,marketing:300,staging:0,sellOther:0,
   managementPct:10,maintenancePct:5,rentInsurance:200,gasSafety:80,electricalInspection:150,
   licensing:0,voidPct:5,groundRent:0,serviceCharge:0,rentOther:0,
-  targetProfit:30000,targetYield:8,
-  notes:{}};}
-
-/* ============================ calc engine ============================ */
-function calc(d,ov){
-  ov=ov||{};
-  var pp=num(d.purchasePrice)*(ov.ppMult||1);
-  var gdv=num(d.gdv)*(ov.gdvMult||1);
-  var rate=num(d.interestRate)+(ov.rateDelta||0);
-  var rentM=num(d.monthlyRent)*(ov.rentMult||1);
-  var months=Math.max(0,num(d.projectMonths)+(ov.monthsDelta||0));
-  var isBtl=d.mode==='btl', isCash=d.mortgageType==='cash';
-  // refurb
-  var rBase=num(d.r_kitchen)+num(d.r_bathroom)+num(d.r_electrical)+num(d.r_plumbing)+num(d.r_heating)+num(d.r_roof)+
-    num(d.r_windows)+num(d.r_decoration)+num(d.r_flooring)+num(d.r_external)+num(d.r_garden)+num(d.r_waste)+num(d.r_professional);
-  var contingency=rBase*num(d.contingencyPct)/100;
-  var refurb=(rBase+contingency)*(ov.refurbMult||1);
-  // finance
-  var deposit=isCash?pp:pp*num(d.depositPct)/100;
-  var mortgage=isCash?0:Math.max(0,pp-deposit);
-  var ltv=pp>0?mortgage/pp:0;
-  var arrange=mortgage*num(d.arrangeFeePct)/100;
-  var financeFees=arrange+num(d.brokerFee)+num(d.valuationFee);
-  var mrate=rate/100/12;
-  var monthlyPay, financeInterest;
+  targetProfit:30000,targetYield:8,notes:{}};}
+function calc(d,ov){ov=ov||{};
+  var pp=num(d.purchasePrice)*(ov.ppMult||1),gdv=num(d.gdv)*(ov.gdvMult||1),rate=num(d.interestRate)+(ov.rateDelta||0);
+  var rentM=num(d.monthlyRent)*(ov.rentMult||1),months=Math.max(0,num(d.projectMonths)+(ov.monthsDelta||0));
+  var isBtl=d.mode==='btl',isCash=d.mortgageType==='cash';
+  var rBase=num(d.r_kitchen)+num(d.r_bathroom)+num(d.r_electrical)+num(d.r_plumbing)+num(d.r_heating)+num(d.r_roof)+num(d.r_windows)+num(d.r_decoration)+num(d.r_flooring)+num(d.r_external)+num(d.r_garden)+num(d.r_waste)+num(d.r_professional);
+  var contingency=rBase*num(d.contingencyPct)/100,refurb=(rBase+contingency)*(ov.refurbMult||1);
+  var deposit=isCash?pp:pp*num(d.depositPct)/100,mortgage=isCash?0:Math.max(0,pp-deposit),ltv=pp>0?mortgage/pp:0;
+  var arrange=mortgage*num(d.arrangeFeePct)/100,financeFees=arrange+num(d.brokerFee)+num(d.valuationFee),mrate=rate/100/12,monthlyPay,financeInterest;
   if(isCash){monthlyPay=0;financeInterest=0;}
-  else if(d.mortgageBasis==='repayment'){
-    var n=Math.max(1,num(d.termYears)*12);monthlyPay=amortPay(mortgage,mrate,n);
-    var bal=amortBal(mortgage,mrate,n,Math.min(months,n));financeInterest=monthlyPay*Math.min(months,n)-(mortgage-bal);
-  } else {monthlyPay=mortgage*mrate;financeInterest=monthlyPay*months;}
-  var financeCosts=financeFees+financeInterest;
-  // acquisition
-  var stamp=sdlt(pp);
+  else if(d.mortgageBasis==='repayment'){var n=Math.max(1,num(d.termYears)*12);monthlyPay=amortPay(mortgage,mrate,n);var bal=amortBal(mortgage,mrate,n,Math.min(months,n));financeInterest=monthlyPay*Math.min(months,n)-(mortgage-bal);}
+  else{monthlyPay=mortgage*mrate;financeInterest=monthlyPay*months;}
+  var financeCosts=financeFees+financeInterest,stamp=sdlt(pp);
   var acqTotal=stamp+num(d.solicitorAcq)+num(d.searches)+num(d.survey)+num(d.landRegistry)+num(d.mortgageFeesAcq)+num(d.otherAcq);
-  // holding
   var holdMoNonMort=num(d.h_insurance)+num(d.h_utilities)+num(d.h_councilTax)+num(d.h_security)+num(d.h_storage)+num(d.h_site)+num(d.h_other);
-  var holdTotNonMort=holdMoNonMort*months;
-  var holdMoIncl=holdMoNonMort+monthlyPay;
-  var holdTotIncl=holdMoIncl*months;
-  // selling (flip)
-  var sellFixed=num(d.sellSolicitor)+num(d.epc)+num(d.marketing)+num(d.staging)+num(d.sellOther);
-  var sellAgent=gdv*num(d.agentPct)/100;
-  var sellTotal=sellAgent+sellFixed;
-  // cash
-  var cashBeforeRefurb=deposit+acqTotal+financeFees;
-  var cashInvested=deposit+acqTotal+financeFees+refurb+holdTotNonMort;
-  // flip results
-  var projectCost=pp+acqTotal+refurb+financeCosts+holdTotNonMort+sellTotal;
-  var profit=gdv-projectCost;
-  var roi=cashInvested>0?profit/cashInvested:0;
-  var roce=projectCost>0?profit/projectCost:0;
-  var margin=gdv>0?profit/gdv:0;
-  var profitPM=months>0?profit/months:profit;
+  var holdTotNonMort=holdMoNonMort*months,holdMoIncl=holdMoNonMort+monthlyPay,holdTotIncl=holdMoIncl*months;
+  var sellFixed=num(d.sellSolicitor)+num(d.epc)+num(d.marketing)+num(d.staging)+num(d.sellOther),sellAgent=gdv*num(d.agentPct)/100,sellTotal=sellAgent+sellFixed;
+  var cashBeforeRefurb=deposit+acqTotal+financeFees,cashInvested=deposit+acqTotal+financeFees+refurb+holdTotNonMort;
+  var projectCost=pp+acqTotal+refurb+financeCosts+holdTotNonMort+sellTotal,profit=gdv-projectCost;
+  var roi=cashInvested>0?profit/cashInvested:0,roce=projectCost>0?profit/projectCost:0,margin=gdv>0?profit/gdv:0,profitPM=months>0?profit/months:profit;
   var breakEven=(num(d.agentPct)<100)?(pp+acqTotal+refurb+financeCosts+holdTotNonMort+sellFixed)/(1-num(d.agentPct)/100):Infinity;
   var mao=gdv-num(d.targetProfit)-refurb-sellTotal-holdTotNonMort-financeCosts-acqTotal;
-  // rental (btl)
-  var opMonthly=rentM*(num(d.managementPct)+num(d.maintenancePct)+num(d.voidPct))/100
-    +(num(d.rentInsurance)+num(d.gasSafety)+num(d.electricalInspection)+num(d.licensing)+num(d.groundRent)+num(d.serviceCharge)+num(d.rentOther))/12;
-  var netCF=rentM-monthlyPay-opMonthly;
-  var annualCF=netCF*12;
-  var grossYield=pp>0?rentM*12/pp:0;
-  var noiAnnual=rentM*12-opMonthly*12;
-  var netYield=(pp+acqTotal+refurb)>0?noiAnnual/(pp+acqTotal+refurb):0;
-  var coc=cashInvested>0?annualCF/cashInvested:0;
-  var newLoan=gdv*num(d.refiLTV)/100;
-  var refiRelease=Math.max(0,newLoan-mortgage);
-  var capitalLeftIn=Math.max(0,cashInvested-refiRelease);
-  var cocLeftIn=capitalLeftIn>0?annualCF/capitalLeftIn:(annualCF>0?Infinity:0);
-  var equityBtl=gdv-newLoan;
-  var maoBtl=num(d.targetYield)>0?rentM*12/(num(d.targetYield)/100):0;
-  // unified
-  var equity=isBtl?equityBtl:profit;
-  var maoUnified=isBtl?maoBtl:mao;
-  var discount=num(d.marketValue)>0?(num(d.marketValue)-pp)/num(d.marketValue):0;
+  var opMonthly=rentM*(num(d.managementPct)+num(d.maintenancePct)+num(d.voidPct))/100+(num(d.rentInsurance)+num(d.gasSafety)+num(d.electricalInspection)+num(d.licensing)+num(d.groundRent)+num(d.serviceCharge)+num(d.rentOther))/12;
+  var netCF=rentM-monthlyPay-opMonthly,annualCF=netCF*12,grossYield=pp>0?rentM*12/pp:0,noiAnnual=rentM*12-opMonthly*12,netYield=(pp+acqTotal+refurb)>0?noiAnnual/(pp+acqTotal+refurb):0,coc=cashInvested>0?annualCF/cashInvested:0;
+  var newLoan=gdv*num(d.refiLTV)/100,refiRelease=Math.max(0,newLoan-mortgage),capitalLeftIn=Math.max(0,cashInvested-refiRelease),cocLeftIn=capitalLeftIn>0?annualCF/capitalLeftIn:(annualCF>0?Infinity:0),equityBtl=gdv-newLoan,maoBtl=num(d.targetYield)>0?rentM*12/(num(d.targetYield)/100):0;
+  var equity=isBtl?equityBtl:profit,maoU=isBtl?maoBtl:mao,discount=num(d.marketValue)>0?(num(d.marketValue)-pp)/num(d.marketValue):0;
   var totalProjectCost=isBtl?(pp+acqTotal+refurb+financeCosts+holdTotNonMort):projectCost;
-  return{pp:pp,gdv:gdv,rentM:rentM,months:months,isBtl:isBtl,isCash:isCash,
-    deposit:deposit,mortgage:mortgage,ltv:ltv,arrange:arrange,financeFees:financeFees,monthlyPay:monthlyPay,
-    financeInterest:financeInterest,financeCosts:financeCosts,stamp:stamp,acqTotal:acqTotal,
-    rBase:rBase,contingency:contingency,refurb:refurb,holdMoNonMort:holdMoNonMort,holdTotNonMort:holdTotNonMort,
-    holdMoIncl:holdMoIncl,holdTotIncl:holdTotIncl,sellAgent:sellAgent,sellFixed:sellFixed,sellTotal:sellTotal,
-    cashBeforeRefurb:cashBeforeRefurb,cashInvested:cashInvested,projectCost:projectCost,totalProjectCost:totalProjectCost,
-    profit:profit,roi:roi,roce:roce,margin:margin,profitPM:profitPM,breakEven:breakEven,mao:maoUnified,
-    opMonthly:opMonthly,netCF:netCF,annualCF:annualCF,grossYield:grossYield,netYield:netYield,coc:coc,
-    newLoan:newLoan,refiRelease:refiRelease,capitalLeftIn:capitalLeftIn,cocLeftIn:cocLeftIn,equity:equity,
-    discount:discount,
-    ppm2:num(d.floorArea)>0?pp/num(d.floorArea):0,gdvm2:num(d.floorArea)>0?gdv/num(d.floorArea):0,
-    refurbm2:num(d.floorArea)>0?refurb/num(d.floorArea):0,refurbPctPP:pp>0?refurb/pp:0};
+  return{pp,gdv,rentM,months,isBtl,isCash,deposit,mortgage,ltv,arrange,financeFees,monthlyPay,financeInterest,financeCosts,stamp,acqTotal,rBase,contingency,refurb,holdMoNonMort,holdTotNonMort,holdMoIncl,holdTotIncl,sellAgent,sellFixed,sellTotal,cashBeforeRefurb,cashInvested,projectCost,totalProjectCost,profit,roi,roce,margin,profitPM,breakEven,mao:maoU,opMonthly,netCF,annualCF,grossYield,netYield,coc,newLoan,refiRelease,capitalLeftIn,cocLeftIn,equity,discount,ppm2:num(d.floorArea)>0?pp/num(d.floorArea):0,gdvm2:num(d.floorArea)>0?gdv/num(d.floorArea):0,refurbm2:num(d.floorArea)>0?refurb/num(d.floorArea):0,refurbPctPP:pp>0?refurb/pp:0};
 }
-
-/* ============================ schema ============================ */
-// classification: [adjustable, certainty, risk, controllable]
-function F(k,label,type,unit,tip,cls){return{k:k,label:label,type:type||'money',unit:unit||'£',tip:tip||'',
-  adj:cls?cls[0]:'Yes',cert:cls?cls[1]:'',risk:cls?cls[2]:'',ctrl:cls?cls[3]:null};}
+function F(k,label,type,unit,tip,cls){return{k,label,type:type||'money',unit:unit||'£',tip:tip||'',adj:cls?cls[0]:'',cert:cls?cls[1]:'',risk:cls?cls[2]:'',ctrl:cls?cls[3]:null};}
 var TYPES=['Terraced house','Semi-detached','Detached','Flat','Bungalow','HMO','Commercial'];
-var SECTIONS=[
- {id:'purchase',n:1,t:'Purchase Details',modes:'both',fields:[
+var GROUPS=[
+ {id:'purchase',tab:'purchase',t:'Property & price',modes:'both',fields:[
    F('address','Property address','text','',''),
    F('purchasePrice','Purchase price','money','£','What you actually pay for the property.',['Yes','Variable','High',true]),
-   F('offerPrice','Offer price','money','£','The figure you offer — compare with the MAO below.',['Yes','Variable','Medium',true]),
-   F('marketValue','Estimated market value','money','£','Current value as-is, before works.',['No','Estimated','Medium',false]),
-   F('gdv','Gross Development Value (GDV)','money','£','End value after refurb — resale price (flip) or valuation for refinance (BTL).',['No','Estimated','High',false]),
-   F('monthlyRent','Estimated monthly rent','money','£','Achievable rent once the property is done up.',['No','Estimated','Medium',false]),
-   F('propertyType','Property type','select','','',['Yes','Fixed','Low']),
-   F('floorArea','Floor area','num','m²','Internal floor area — drives the £/m² metrics.',['No','Estimated','Low']),
-   F('bedrooms','Bedrooms','num','','',['No','Fixed','Low']),
-   F('bathrooms','Bathrooms','num','','',['No','Fixed','Low'])
- ]},
- {id:'finance',n:2,t:'Finance',modes:'both',fields:[
-   F('mortgageType','Mortgage type','select','','BTL mortgage, short-term Bridging, or Cash (no borrowing).',['Yes','Fixed','Medium',true]),
-   F('mortgageBasis','Mortgage basis','select','','Interest-only keeps payments low; Repayment pays down the loan.',['Yes','Fixed','Low',true]),
-   F('depositPct','Deposit','pctdep','%','Your cash deposit as a % of price — the £ updates alongside.',['Yes','Variable','Medium',true]),
-   F('interestRate','Interest rate','num','%','Annual interest rate. Bridging is usually quoted per month — enter the annual equivalent.',['No','Variable','High',false]),
-   F('termYears','Mortgage term','num','yrs','Loan term in years (used for repayment amortisation).',['Yes','Fixed','Low',true]),
-   F('arrangeFeePct','Arrangement fee','num','%','Lender arrangement fee as a % of the loan.',['No','Fixed','Low',false]),
+   F('offerPrice','Offer price','money','£','Compare this with the max offer in the summary.',['Yes','Variable','Medium',true]),
+   F('marketValue','Market value (as-is)','money','£','Current value before works.',['No','Estimated','Medium',false]),
+   F('gdv','End value / GDV','money','£','Resale price (flip) or valuation for refinance (BTL).',['No','Estimated','High',false]),
+   F('monthlyRent','Monthly rent','money','£','Achievable rent once done up.',['No','Estimated','Medium',false]),
+   F('propertyType','Property type','select','',''),
+   F('floorArea','Floor area','num','m²','Drives the £/m² figures.',['No','Estimated','Low']),
+   F('bedrooms','Bedrooms','num','',''),F('bathrooms','Bathrooms','num','','')]},
+ {id:'finance',tab:'finance',t:'Finance',modes:'both',fields:[
+   F('mortgageType','Mortgage type','select','','BTL, short-term Bridging, or Cash.',['Yes','Fixed','Medium',true]),
+   F('mortgageBasis','Basis','select','','Interest-only keeps payments low; Repayment pays down the loan.',['Yes','Fixed','Low',true]),
+   F('depositPct','Deposit','pctdep','%','Your cash deposit — % and £ stay linked.',['Yes','Variable','Medium',true]),
+   F('interestRate','Interest rate','num','%','Annual rate. Bridging is quoted per month — enter the annual equivalent.',['No','Variable','High',false]),
+   F('termYears','Term','num','yrs','Loan term in years (for repayment amortisation).',['Yes','Fixed','Low',true]),
+   F('arrangeFeePct','Arrangement fee','num','%','% of the loan.',['No','Fixed','Low',false]),
    F('brokerFee','Broker fee','money','£','',['Yes','Fixed','Low',true]),
    F('valuationFee','Valuation fee','money','£','',['No','Fixed','Low',false]),
-   F('refiLTV','Refinance LTV (BTL)','num','%','For BTL/BRRR — new loan as a % of GDV when you refinance to pull cash out.',['Yes','Estimated','Medium',true])
- ]},
- {id:'acq',n:3,t:'Acquisition Costs',modes:'both',fields:[
+   F('refiLTV','Refinance LTV','num','%','BTL only — new loan as % of GDV when you refinance.',['Yes','Estimated','Medium',true])]},
+ {id:'rental',tab:'finance',t:'Rental income & costs',modes:'btl',fields:[
+   F('managementPct','Management','num','%','Letting agent fee as % of rent.',['Yes','Fixed','Low',true]),
+   F('maintenancePct','Maintenance','num','%','Repairs allowance as % of rent.',['Yes','Estimated','Medium',true]),
+   F('voidPct','Void allowance','num','%','Expected empty periods as % of rent.',['No','Estimated','Medium',false]),
+   F('rentInsurance','Insurance (yr)','money','£','',['Yes','Fixed','Low',true]),
+   F('gasSafety','Gas safety (yr)','money','£','',['No','Fixed','Low',false]),
+   F('electricalInspection','Electrical (yr)','money','£','EICR, annualised.',['No','Fixed','Low',false]),
+   F('licensing','Licensing (yr)','money','£','HMO / selective licence.',['No','Fixed','Medium',false]),
+   F('groundRent','Ground rent (yr)','money','£','',['No','Fixed','Low',false]),
+   F('serviceCharge','Service charge (yr)','money','£','',['No','Fixed','Medium',false]),
+   F('rentOther','Other (yr)','money','£','',['Yes','Estimated','Low',true])]},
+ {id:'acq',tab:'costs',t:'Acquisition',modes:'both',fields:[
    F('solicitorAcq','Solicitor','money','£','',['Yes','Estimated','Low',true]),
-   F('searches','Searches','money','£','Local authority & other searches — set by third parties.',['No','Fixed','Low',false]),
+   F('searches','Searches','money','£','Set by third parties.',['No','Fixed','Low',false]),
    F('survey','Survey','money','£','',['Yes','Estimated','Low',true]),
-   F('landRegistry','Land Registry','money','£','Statutory registration fee — you cannot change it.',['No','Fixed','Low',false]),
-   F('mortgageFeesAcq','Mortgage fees (other)','money','£','Any mortgage fees not already in the Finance section.',['No','Estimated','Low',false]),
-   F('otherAcq','Other acquisition costs','money','£','',['Yes','Estimated','Medium',true])
- ]},
- {id:'refurb',n:4,t:'Refurbishment Costs',modes:'both',fields:[
+   F('landRegistry','Land Registry','money','£','Statutory fee.',['No','Fixed','Low',false]),
+   F('mortgageFeesAcq','Mortgage fees (other)','money','£','Not already in Finance.',['No','Estimated','Low',false]),
+   F('otherAcq','Other','money','£','',['Yes','Estimated','Medium',true])]},
+ {id:'refurb',tab:'costs',t:'Refurbishment',modes:'both',fields:[
    F('r_kitchen','Kitchen','money','£','',['Yes','Estimated','Medium',true]),
    F('r_bathroom','Bathroom','money','£','',['Yes','Estimated','Medium',true]),
    F('r_electrical','Electrical','money','£','',['Yes','Estimated','High',true]),
    F('r_plumbing','Plumbing','money','£','',['Yes','Estimated','High',true]),
    F('r_heating','Heating','money','£','',['Yes','Estimated','Medium',true]),
-   F('r_roof','Roof','money','£','Often the biggest surprise cost — treat as high risk.',['Yes','Estimated','High',true]),
+   F('r_roof','Roof','money','£','Often the biggest surprise — high risk.',['Yes','Estimated','High',true]),
    F('r_windows','Windows','money','£','',['Yes','Estimated','Medium',true]),
-   F('r_decoration','Internal decoration','money','£','',['Yes','Estimated','Low',true]),
+   F('r_decoration','Decoration','money','£','',['Yes','Estimated','Low',true]),
    F('r_flooring','Flooring','money','£','',['Yes','Estimated','Low',true]),
    F('r_external','External works','money','£','',['Yes','Estimated','Medium',true]),
-   F('r_garden','Garden / landscaping','money','£','',['Yes','Estimated','Low',true]),
+   F('r_garden','Garden','money','£','',['Yes','Estimated','Low',true]),
    F('r_waste','Waste removal','money','£','',['Yes','Estimated','Low',true]),
-   F('r_professional','Professional fees','money','£','Architect, planning, building control, PM fees.',['Yes','Estimated','Medium',true]),
-   F('contingencyPct','Contingency','num','%','Buffer for the unknowns, as a % of the refurb subtotal. 10–15% is prudent.',['Yes','Estimated','High',true])
- ]},
- {id:'holding',n:5,t:'Holding Costs',modes:'both',fields:[
-   F('h_insurance','Insurance (mo)','money','£','',['Yes','Fixed','Low',true]),
-   F('h_utilities','Utilities (mo)','money','£','',['Yes','Variable','Low',true]),
-   F('h_councilTax','Council tax (mo)','money','£','',['No','Fixed','Low',false]),
-   F('h_security','Security (mo)','money','£','',['Yes','Variable','Medium',true]),
-   F('h_storage','Storage (mo)','money','£','',['Yes','Variable','Low',true]),
-   F('h_site','Site costs (mo)','money','£','',['Yes','Variable','Medium',true]),
-   F('h_other','Other holding (mo)','money','£','',['Yes','Variable','Medium',true]),
-   F('projectMonths','Project duration','num','mo','How long you hold the property — every month adds finance + holding cost.',['Yes','Estimated','High',true])
- ]},
- {id:'selling',n:6,t:'Selling Costs',modes:'flip',fields:[
-   F('agentPct','Estate agent','num','%','Sale agent fee as a % of GDV.',['Yes','Fixed','Low',true]),
+   F('r_professional','Professional fees','money','£','Architect, planning, building control, PM.',['Yes','Estimated','Medium',true]),
+   F('contingencyPct','Contingency','num','%','Buffer for the unknowns, % of refurb. 10–15% is prudent.',['Yes','Estimated','High',true])]},
+ {id:'holding',tab:'costs',t:'Holding (monthly)',modes:'both',fields:[
+   F('h_insurance','Insurance','money','£','',['Yes','Fixed','Low',true]),
+   F('h_utilities','Utilities','money','£','',['Yes','Variable','Low',true]),
+   F('h_councilTax','Council tax','money','£','',['No','Fixed','Low',false]),
+   F('h_security','Security','money','£','',['Yes','Variable','Medium',true]),
+   F('h_storage','Storage','money','£','',['Yes','Variable','Low',true]),
+   F('h_site','Site costs','money','£','',['Yes','Variable','Medium',true]),
+   F('h_other','Other','money','£','',['Yes','Variable','Medium',true]),
+   F('projectMonths','Project duration','num','mo','How long you hold it — every month adds cost.',['Yes','Estimated','High',true])]},
+ {id:'selling',tab:'costs',t:'Selling',modes:'flip',fields:[
+   F('agentPct','Estate agent','num','%','% of GDV.',['Yes','Fixed','Low',true]),
    F('sellSolicitor','Solicitor','money','£','',['Yes','Estimated','Low',true]),
    F('epc','EPC','money','£','',['No','Fixed','Low',false]),
    F('marketing','Marketing','money','£','',['Yes','Variable','Low',true]),
    F('staging','Staging','money','£','',['Yes','Variable','Low',true]),
-   F('sellOther','Other selling costs','money','£','',['Yes','Estimated','Low',true])
- ]},
- {id:'rental',n:7,t:'Rental Costs',modes:'btl',fields:[
-   F('managementPct','Management','num','%','Letting agent management fee as a % of rent.',['Yes','Fixed','Low',true]),
-   F('maintenancePct','Maintenance','num','%','Allowance for repairs as a % of rent.',['Yes','Estimated','Medium',true]),
-   F('rentInsurance','Insurance (yr)','money','£','Annual landlord insurance.',['Yes','Fixed','Low',true]),
-   F('gasSafety','Gas safety (yr)','money','£','Annual CP12 certificate.',['No','Fixed','Low',false]),
-   F('electricalInspection','Electrical inspection (yr)','money','£','EICR — annualised.',['No','Fixed','Low',false]),
-   F('licensing','Licensing (yr)','money','£','HMO / selective licence, annualised.',['No','Fixed','Medium',false]),
-   F('voidPct','Void allowance','num','%','Expected empty periods as a % of rent.',['No','Estimated','Medium',false]),
-   F('groundRent','Ground rent (yr)','money','£','',['No','Fixed','Low',false]),
-   F('serviceCharge','Service charge (yr)','money','£','',['No','Fixed','Medium',false]),
-   F('rentOther','Other rental costs (yr)','money','£','',['Yes','Estimated','Low',true])
- ]}
+   F('sellOther','Other','money','£','',['Yes','Estimated','Low',true])]}
 ];
-
-/* ============================ render ============================ */
-var openState={};
-function badgeHTML(f){
-  if(!f.risk&&!f.cert&&f.ctrl==null)return '';
-  var h='<div class="badges">';
-  if(f.ctrl!=null)h+='<span class="bdg '+(f.ctrl?'ctrl':'noctrl')+'">'+(f.ctrl?'Control':'No control')+'</span>';
-  if(f.cert)h+='<span class="bdg '+f.cert.toLowerCase()+'">'+f.cert+'</span>';
-  if(f.risk)h+='<span class="bdg '+({Low:'low',Medium:'med',High:'high'}[f.risk])+'">'+f.risk+' risk</span>';
-  h+='</div>';return h;
-}
-function fieldHTML(d,f){
-  var v=d[f.k];
-  if(f.type==='pctdep'){
-    var pp=num(d.purchasePrice),p=num(d.depositPct),amt=Math.round(pp*p/100);
-    return '<div class="fld"><div class="lab">'+f.label+q(f)+badgeHTML(f)+'</div>'+
-      '<div class="affix"><input id="dPct" class="inp" style="width:64px" inputmode="decimal" value="'+esc(v)+'" oninput="updDep(\'pct\',this.value)"><span class="u">%</span>'+
-      '<span class="u">·£</span><input id="dAmt" class="inp" style="width:92px" inputmode="decimal" value="'+esc(amt)+'" oninput="updDep(\'amt\',this.value)"></div></div>';
-  }
-  if(f.type==='select'){
-    var opts=f.k==='mortgageType'?[['btl','Buy to Let'],['bridging','Bridging'],['cash','Cash']]
-      :f.k==='mortgageBasis'?[['interest','Interest only'],['repayment','Repayment']]
-      :TYPES.map(t=>[t,t]);
-    var o=opts.map(x=>'<option value="'+x[0]+'"'+(v===x[0]?' selected':'')+'>'+x[1]+'</option>').join('');
-    return '<div class="fld"><div class="lab">'+f.label+q(f)+badgeHTML(f)+'</div><select class="inp" oninput="upd(\''+f.k+'\',this.value)">'+o+'</select></div>';
-  }
-  var isText=f.type==='text';
-  var affixL=f.unit==='£'?'<span class="u">£</span>':'';
-  var affixR=(f.unit&&f.unit!=='£')?'<span class="u">'+f.unit+'</span>':'';
-  return '<div class="fld"><div class="lab">'+f.label+q(f)+badgeHTML(f)+'</div>'+
-    '<div class="affix">'+affixL+'<input class="inp'+(isText?' txt':'')+'" inputmode="'+(isText?'text':'decimal')+'" value="'+esc(v)+'" oninput="upd(\''+f.k+'\',this.value)">'+affixR+'</div></div>';
-}
-function q(f){return f.tip?'<span class="q" title="'+esc(f.tip)+'">?</span>':'';}
-
-function sectionVisible(sec,mode){return sec.modes==='both'||sec.modes===mode;}
+var TABS=[['summary','Summary'],['purchase','Purchase'],['costs','Costs'],['finance','Finance'],['risk','Risk']];
+var curTab='summary';
+var detOpen={};
+function vis(g,mode){return g.modes==='both'||g.modes===mode;}
 function render(){
   var d=deal();
   document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on',b.getAttribute('data-m')===d.mode));
-  var sel=document.getElementById('dealSel');
-  sel.innerHTML=store.deals.map(x=>'<option value="'+x.id+'"'+(x.id===store.current?' selected':'')+'>'+esc(x.name)+'</option>').join('');
-  var html='';
-  SECTIONS.forEach(sec=>{
-    if(!sectionVisible(sec,d.mode))return;
-    var op=openState[sec.id]!==false; // default open
-    html+='<div class="acc'+(op?' open':'')+'" id="acc-'+sec.id+'"><div class="head" onclick="toggleAcc(\''+sec.id+'\')">'+
-      '<div class="n">'+sec.n+'</div><div class="t">'+sec.t+'</div><div class="st" id="st-'+sec.id+'"></div><div class="car">›</div></div>'+
-      '<div class="body">'+sec.fields.map(f=>fieldHTML(d,f)).join('')+
-      '<div class="outs" id="outs-'+sec.id+'"></div>'+
-      '<textarea class="notes" placeholder="Notes for this section…" oninput="updNote(\''+sec.id+'\',this.value)">'+esc((d.notes&&d.notes[sec.id])||'')+'</textarea>'+
-      '</div></div>';
-  });
-  // Section 8 sensitivity
-  html+=sensSectionHTML();
-  // Section 9 controllable
-  html+='<div class="acc open" id="acc-ctrl"><div class="head" onclick="toggleAcc(\'ctrl\')"><div class="n">9</div><div class="t">Controllable vs Non-controllable Costs</div><div class="st"></div><div class="car">›</div></div><div class="body" id="ctrlBody"></div></div>';
-  // Section 10 dashboard
-  html+='<div class="acc open" id="acc-dash"><div class="head" onclick="toggleAcc(\'dash\')"><div class="n">10</div><div class="t">Project Summary Dashboard</div><div class="st"></div><div class="car">›</div></div><div class="body" id="dashBody"></div></div>';
-  document.getElementById('sections').innerHTML=html;
-  repaint();
+  document.getElementById('dealSel').innerHTML=store.deals.map(x=>'<option value="'+x.id+'"'+(x.id===store.current?' selected':'')+'>'+esc(x.name)+'</option>').join('');
+  document.getElementById('tabs').innerHTML=TABS.map(t=>'<button class="'+(curTab===t[0]?'on':'')+'" onclick="setTab(\''+t[0]+'\')">'+t[1]+'</button>').join('');
+  renderTab();repaint();
 }
-function toggleAcc(id){var a=document.getElementById('acc-'+id);a.classList.toggle('open');openState[id]=a.classList.contains('open');}
-function expandAll(v){document.querySelectorAll('.acc').forEach(a=>{a.classList.toggle('open',v);openState[a.id.replace('acc-','')]=v;});}
-
-/* outputs per section */
-function O(lab,val,cls,big){return '<div class="out'+(big?' big':'')+'"><span>'+lab+'</span><span class="v '+(cls||'')+'">'+val+'</span></div>';}
-function outsFor(id,c,d){
-  if(id==='purchase')return O('Discount below market value',pct(c.discount),c.discount>=0?'pos':'neg')+O('£/m² purchase price',money(c.ppm2))+O('£/m² GDV',money(c.gdvm2));
-  if(id==='finance')return O('Mortgage amount',money(c.mortgage))+O('Loan to value (LTV)',pct(c.ltv))+O('Monthly mortgage payment',money(c.monthlyPay))+O('Total interest during project',money(c.financeInterest))+O('Total finance costs',money(c.financeCosts),'',true);
-  if(id==='acq')return O('Stamp Duty (auto, additional-property)',money(c.stamp))+O('Total acquisition costs',money(c.acqTotal),'',true)+O('Cash required before refurbishment',money(c.cashBeforeRefurb));
-  if(id==='refurb')return O('Refurb subtotal',money(c.rBase))+O('Contingency',money(c.contingency))+O('Total refurbishment cost',money(c.refurb),'',true)+O('Cost per m²',money(c.refurbm2))+O('Refurb as % of purchase price',pct(c.refurbPctPP));
-  if(id==='holding')return O('Monthly holding cost (incl. mortgage)',money(c.holdMoIncl))+O('Total holding cost (incl. mortgage)',money(c.holdTotIncl),'',true)+O('Holding excl. mortgage (used in project cost)',money(c.holdTotNonMort));
+function setTab(t){curTab=t;render();window.scrollTo(0,0);}
+function q(f){return f.tip?'<span class="q" title="'+esc(f.tip)+'">?</span>':'';}
+function fieldHTML(d,f){
+  var v=d[f.k];
+  if(f.type==='pctdep'){var pp=num(d.purchasePrice),p=num(d.depositPct),amt=Math.round(pp*p/100);
+    return '<div class="fld"><div class="l">'+f.label+q(f)+'</div><div class="affix"><input id="dPct" class="inp" style="width:62px" inputmode="decimal" value="'+esc(v)+'" oninput="updDep(\'pct\',this.value)"><span class="u">%</span><span class="u">£</span><input id="dAmt" class="inp" style="width:90px" inputmode="decimal" value="'+esc(amt)+'" oninput="updDep(\'amt\',this.value)"></div></div>';}
+  if(f.type==='select'){var opts=f.k==='mortgageType'?[['btl','Buy to Let'],['bridging','Bridging'],['cash','Cash']]:f.k==='mortgageBasis'?[['interest','Interest only'],['repayment','Repayment']]:TYPES.map(t=>[t,t]);
+    return '<div class="fld"><div class="l">'+f.label+q(f)+'</div><select class="inp" oninput="upd(\''+f.k+'\',this.value)">'+opts.map(x=>'<option value="'+x[0]+'"'+(v===x[0]?' selected':'')+'>'+x[1]+'</option>').join('')+'</select></div>';}
+  var isText=f.type==='text',aL=f.unit==='£'?'<span class="u">£</span>':'',aR=(f.unit&&f.unit!=='£')?'<span class="u">'+f.unit+'</span>':'';
+  return '<div class="fld"><div class="l">'+f.label+q(f)+'</div><div class="affix">'+aL+'<input class="inp'+(isText?' txt':'')+'" inputmode="'+(isText?'text':'decimal')+'" value="'+esc(v)+'" oninput="upd(\''+f.k+'\',this.value)">'+aR+'</div></div>';
+}
+function groupCard(d,g){
+  var det=detOpen[g.id];
+  return '<div class="grp">'+g.fields.map(f=>fieldHTML(d,f)).join('')+
+    '<div class="det-tog'+(det?' open':'')+'" onclick="toggleDet(\''+g.id+'\')"><span class="cx">›</span>Show figures</div>'+
+    '<div class="det'+(det?' open':'')+'" id="det-'+g.id+'"></div>'+
+    '<textarea class="notes" placeholder="Notes…" oninput="updNote(\''+g.id+'\',this.value)">'+esc((d.notes&&d.notes[g.id])||'')+'</textarea></div>';
+}
+function renderTab(){
+  var d=deal(),c=calc(d),h='';
+  if(curTab==='summary')h=summaryTab(c,d);
+  else if(curTab==='risk')h=riskTab();
+  else{var gs=GROUPS.filter(g=>g.tab===curTab&&vis(g,d.mode));
+    gs.forEach(g=>{h+='<h3 style="margin:2px 2px 8px;font-size:14px">'+g.t+'</h3>'+groupCard(d,g);});
+    if(curTab==='costs')h+='<button class="pdfbtn" onclick="exportPDF()">Export full appraisal (PDF)</button>';}
+  document.getElementById('tabc').innerHTML=h;
+}
+function toggleDet(id){detOpen[id]=!detOpen[id];var p=document.getElementById('det-'+id),t=p.previousElementSibling;
+  p.classList.toggle('open',detOpen[id]);t.classList.toggle('open',detOpen[id]);repaint();}
+function O(l,v,cls,big){return '<div class="o'+(big?' big':'')+'"><span>'+l+'</span><span class="v '+(cls||'')+'">'+v+'</span></div>';}
+function detFor(id,c){
+  if(id==='purchase')return O('Discount below market value',pct(c.discount),c.discount>=0?'pos':'neg')+O('£/m² purchase',money(c.ppm2))+O('£/m² end value',money(c.gdvm2));
+  if(id==='finance')return O('Mortgage amount',money(c.mortgage))+O('Loan to value',pct(c.ltv))+O('Monthly payment',money(c.monthlyPay))+O('Interest over project',money(c.financeInterest))+O('Total finance costs',money(c.financeCosts),'',true);
+  if(id==='rental')return O('Net cash flow / mo',money(c.netCF),c.netCF>=0?'pos':'neg',true)+O('Annual cash flow',money(c.annualCF),c.annualCF>=0?'pos':'neg')+O('Gross yield',pct(c.grossYield))+O('Net yield',pct(c.netYield))+O('Operating costs / mo',money(c.opMonthly));
+  if(id==='acq')return O('Stamp Duty (auto)',money(c.stamp))+O('Total acquisition',money(c.acqTotal),'',true)+O('Cash before refurb',money(c.cashBeforeRefurb));
+  if(id==='refurb')return O('Subtotal',money(c.rBase))+O('Contingency',money(c.contingency))+O('Total refurbishment',money(c.refurb),'',true)+O('Cost per m²',money(c.refurbm2))+O('% of purchase price',pct(c.refurbPctPP));
+  if(id==='holding')return O('Monthly (incl. mortgage)',money(c.holdMoIncl))+O('Total (incl. mortgage)',money(c.holdTotIncl),'',true)+O('Excl. mortgage',money(c.holdTotNonMort));
   if(id==='selling')return O('Agent fee',money(c.sellAgent))+O('Total selling costs',money(c.sellTotal),'',true);
-  if(id==='rental'){return O('Monthly net cash flow',money(c.netCF),c.netCF>=0?'pos':'neg',true)+O('Annual cash flow',money(c.annualCF),c.annualCF>=0?'pos':'neg')+O('Gross yield',pct(c.grossYield))+O('Net yield',pct(c.netYield))+O('Operating costs / mo',money(c.opMonthly));}
   return '';
 }
-function sectionStatus(id,c){
-  if(id==='purchase')return c.discount>=0.1?'green':c.discount>=0?'amber':'red';
-  if(id==='rental')return c.netCF>=200?'green':c.netCF>=0?'amber':'red';
-  if(id==='refurb')return c.refurbPctPP<=0.25?'green':c.refurbPctPP<=0.5?'amber':'red';
-  if(id==='finance')return (c.gdv>0&&c.financeCosts/c.gdv<0.08)?'green':(c.financeCosts/(c.gdv||1)<0.13?'amber':'red');
-  return '';
-}
-
-/* ============================ repaint ============================ */
-function repaint(){
-  var d=deal();var c=calc(d);
-  SECTIONS.forEach(sec=>{if(!sectionVisible(sec,d.mode))return;
-    var el=document.getElementById('outs-'+sec.id);if(el)el.innerHTML=outsFor(sec.id,c,d);
-    var st=document.getElementById('st-'+sec.id);if(st){var s=sectionStatus(sec.id,c);st.className='st '+(s||'');}
-  });
-  paintDash(c,d);paintCtrl(c,d);paintSens(d);paintProgress(d);
-  document.getElementById('sub').textContent=(d.mode==='btl'?'Buy to Let':'Flip')+' · '+(d.name||'appraisal');
-}
-function paintProgress(d){
-  var keys=['purchasePrice','gdv','monthlyRent','floorArea','depositPct','interestRate','projectMonths','r_kitchen','r_bathroom'];
-  var filled=keys.filter(k=>num(d[k])>0).length;
-  document.getElementById('progbar').style.width=Math.round(filled/keys.length*100)+'%';
-}
-
-/* dashboard */
-function band(v,g,a){return v>=g?'green':v>=a?'amber':'red';}
-function paintDash(c,d){
-  var isB=c.isBtl;
-  var cards=[
-    ['Total cash required',money(c.cashInvested),'hi'],
-    ['Total project cost',money(c.totalProjectCost)],
-    ['Total finance costs',money(c.financeCosts)],
-    ['Total acquisition',money(c.acqTotal)],
-    ['Total refurbishment',money(c.refurb)],
-    ['Total holding',money(c.holdTotNonMort)],
-    isB?['Total rental costs / yr',money(c.opMonthly*12)]:['Total selling costs',money(c.sellTotal)],
-    [isB?'Annual cash flow':'Expected profit',isB?money(c.annualCF):money(c.profit),'hi',isB?(c.annualCF>=0?'pos':'neg'):(c.profit>=0?'pos':'neg')],
-    ['Monthly cash flow',money(isB?c.netCF:c.profitPM),'',(isB?c.netCF:c.profitPM)>=0?'pos':'neg'],
-    [isB?'Cash-on-cash return':'ROI',pct(isB?c.coc:c.roi)],
-    ['ROCE / return on cash',pct(isB?c.cocLeftIn:c.roce)],
-    ['Gross yield',pct(c.grossYield)],
-    ['Net yield',pct(c.netYield)],
-    ['Equity created',money(c.equity)],
-    ['Capital left in deal',money(c.capitalLeftIn)],
-    ['Refinance amount',money(c.newLoan)],
-    ['Max mortgage',money(c.mortgage)],
-    ['Maximum offer price (MAO)',money(c.mao),'hi'],
-    ['Break-even sale price',isB?'—':money(c.breakEven)],
-    ['Profit margin (on GDV)',isB?'—':pct(c.margin)]
-  ];
-  var h='<div class="hint">Large numbers first. MAO = the most you should offer to still hit your target '+(isB?'yield ('+num(d.targetYield)+'%).':'profit ('+money(num(d.targetProfit))+').')+' Edit the target in the box below.</div>';
-  h+='<div class="cards">'+cards.map(x=>'<div class="kpi'+(x[2]==='hi'?' hi':'')+'"><div class="k">'+x[0]+'</div><div class="v '+(x[3]||'')+'">'+x[1]+'</div></div>').join('')+'</div>';
-  // target inputs
-  h+='<div class="fld" style="margin-top:10px"><div class="lab">Target profit (flip)</div><div class="affix"><span class="u">£</span><input class="inp" inputmode="decimal" value="'+esc(d.targetProfit)+'" oninput="upd(\'targetProfit\',this.value)"></div></div>';
-  h+='<div class="fld"><div class="lab">Target gross yield (BTL)</div><div class="affix"><input class="inp" style="width:80px" inputmode="decimal" value="'+esc(d.targetYield)+'" oninput="upd(\'targetYield\',this.value)"><span class="u">%</span></div></div>';
-  // health badges
-  var scores=healthScores(c);
-  h+='<h2 class="sec">Project health</h2><div class="badgesrow">';
-  scores.items.forEach(it=>{h+='<div class="hb"><span class="k">'+it.k+'</span><span class="p '+it.band+'">'+it.word+'</span></div>';});
-  h+='</div>';
-  var col=scores.overall>=70?'green':scores.overall>=45?'amber':'red';
-  var colv={green:'var(--greenbg)',amber:'var(--amberbg)',red:'var(--redbg)'}[col];
-  var colf={green:'var(--green)',amber:'var(--amber)',red:'var(--red)'}[col];
-  h+='<div class="score"><div class="ring" style="background:'+colv+';color:'+colf+'">'+scores.overall+'</div><div class="lab">Overall deal score<b>'+(scores.overall>=70?'Strong deal':scores.overall>=45?'Marginal — negotiate':'Poor — walk away or re-cut')+'</b></div></div>';
-  document.getElementById('dashBody').innerHTML=h;
-}
-function healthScores(c){
-  var isB=c.isBtl;var items=[];function W(v){return v>=70?'Excellent':v>=45?'Fair':'Poor';}function B(v){return v>=70?'green':v>=45?'amber':'red';}
+function healthScores(c){var isB=c.isBtl;function W(v){return v>=70?'Excellent':v>=45?'Fair':'Poor';}function B(v){return v>=70?'green':v>=45?'amber':'red';}
   var purchase=c.discount>=0.1?90:c.discount>=0.03?60:c.discount>=0?40:15;
   var finance=(c.gdv>0)?(c.financeCosts/c.gdv<0.06?90:c.financeCosts/c.gdv<0.1?60:c.financeCosts/c.gdv<0.15?40:15):50;
   var cashflow=isB?(c.netCF>=250?90:c.netCF>=100?65:c.netCF>=0?40:10):(c.profitPM>=4000?90:c.profitPM>=1500?60:c.profitPM>=0?35:10);
   var roiS=isB?(c.coc>=0.09?90:c.coc>=0.06?60:c.coc>=0?35:10):(c.roi>=0.25?90:c.roi>=0.15?60:c.roi>=0.05?40:10);
   var profitS=isB?(c.equity>=40000?90:c.equity>=15000?60:c.equity>=0?35:10):(c.profit>=30000?90:c.profit>=15000?60:c.profit>=0?35:5);
-  items.push({k:'Purchase price',word:W(purchase),band:B(purchase)});
-  items.push({k:'Finance',word:W(finance),band:B(finance)});
-  items.push({k:'Cash flow',word:W(cashflow),band:B(cashflow)});
-  items.push({k:'ROI',word:W(roiS),band:B(roiS)});
-  items.push({k:'Profit',word:W(profitS),band:B(profitS)});
-  var overall=Math.round(purchase*0.15+finance*0.15+cashflow*0.2+roiS*0.25+profitS*0.25);
-  return{items:items,overall:overall};
+  var items=[['Purchase price',purchase],['Finance',finance],['Cash flow',cashflow],['ROI',roiS],['Profit',profitS]].map(x=>({k:x[0],word:W(x[1]),band:B(x[1])}));
+  return{items,overall:Math.round(purchase*0.15+finance*0.15+cashflow*0.2+roiS*0.25+profitS*0.25)};
 }
-
-/* controllable tables */
-function paintCtrl(c,d){
-  var ctrlItems=[],nonItems=[];
-  SECTIONS.forEach(sec=>{if(!sectionVisible(sec,d.mode))return;sec.fields.forEach(f=>{
-    if(f.ctrl==null||f.type==='text'||f.type==='select')return;
-    var val;
-    if(f.k==='depositPct')val=num(d.purchasePrice)*num(d.depositPct)/100;
-    else if(f.k==='purchasePrice')val=num(d.purchasePrice);
-    else if(f.k==='arrangeFeePct')val=c.arrange;
-    else if(f.k==='agentPct')val=c.sellAgent;
-    else if(f.type==='num')return; // skip pure-% params w/o £ except handled above
-    else val=num(d[f.k]);
-    (f.ctrl?ctrlItems:nonItems).push([f.label,val]);
-  });});
-  // add stamp duty as non-controllable
-  nonItems.push(['Stamp Duty',c.stamp]);
-  var ct=ctrlItems.reduce((a,x)=>a+x[1],0), nt=nonItems.reduce((a,x)=>a+x[1],0);
-  var pc=c.totalProjectCost||1;
-  function tbl(items,tot,label){return '<table class="tbl">'+items.map(x=>'<tr><td>'+x[0]+'</td><td>'+money(x[1])+'</td></tr>').join('')+
-    '<tr class="tot"><td>'+label+'</td><td>'+money(tot)+'</td></tr></table>';}
-  var h='<div class="hint">Where your money goes — and how much of it you can actually influence.</div>';
-  h+='<h2 class="sec" style="margin-top:4px">Costs I can control</h2>'+tbl(ctrlItems,ct,'Running total')+
-     '<div class="out"><span>% of project cost</span><span class="v">'+pct(ct/pc)+'</span></div>';
-  h+='<h2 class="sec">Costs I cannot control</h2>'+tbl(nonItems,nt,'Running total')+
-     '<div class="out"><span>% of project cost</span><span class="v">'+pct(nt/pc)+'</span></div>';
-  h+='<div class="note">External factors you can\'t price directly — market interest rates, inflation, planning/building-control decisions, government taxes — sit behind these numbers. Use the stress tests to see how exposed you are.</div>';
-  document.getElementById('ctrlBody').innerHTML=h;
+function summaryTab(c,d){var isB=c.isBtl,s=healthScores(c),col=s.overall>=70?'green':s.overall>=45?'amber':'red';
+  var cv={green:'var(--greenbg)',amber:'var(--amberbg)',red:'var(--redbg)'}[col],cf={green:'var(--green)',amber:'var(--amber)',red:'var(--red)'}[col];
+  var h='<div class="score"><div class="ring" style="background:'+cv+';color:'+cf+'">'+s.overall+'</div><div class="t">Overall deal score<b>'+(s.overall>=70?'Strong deal':s.overall>=45?'Marginal — negotiate':'Poor — re-cut or walk')+'</b></div></div>';
+  h+='<div class="hbs">'+s.items.map(it=>'<div class="hb"><span class="k">'+it.k+'</span><span class="p '+it.band+'">'+it.word+'</span></div>').join('')+'</div>';
+  h+='<h2 class="sec">Where the money goes</h2><div class="kv">'+O('Purchase price',money(c.pp))+O('Acquisition',money(c.acqTotal))+O('Refurbishment',money(c.refurb))+O('Finance',money(c.financeCosts))+O('Holding',money(c.holdTotNonMort))+(isB?'':O('Selling',money(c.sellTotal)))+O('Total project cost',money(c.totalProjectCost),'',true)+'</div>';
+  h+='<h2 class="sec">Returns</h2><div class="kv">'+(isB?O('Annual cash flow',money(c.annualCF),c.annualCF>=0?'pos':'neg',true)+O('Cash-on-cash',pct(c.coc))+O('Gross / net yield',pct(c.grossYield)+' / '+pct(c.netYield))+O('Equity created',money(c.equity))+O('Capital left in',money(c.capitalLeftIn))+O('Return on cash left in',pct(c.cocLeftIn)):O('Expected profit',money(c.profit),c.profit>=0?'pos':'neg',true)+O('ROI',pct(c.roi))+O('ROCE',pct(c.roce))+O('Profit / month',money(c.profitPM))+O('Profit margin (on GDV)',pct(c.margin))+O('Break-even sale',money(c.breakEven)))+O('Total cash needed',money(c.cashInvested))+'</div>';
+  h+='<h2 class="sec">Maximum offer</h2><div class="kv"><div class="hint">The most you should offer to still hit your target '+(isB?'yield.':'profit.')+'</div>'+O('Maximum offer price',money(c.mao),'',true)+
+    '<div class="fld"><div class="l">Target '+(isB?'gross yield':'profit')+'</div><div class="affix">'+(isB?'':'<span class="u">£</span>')+'<input class="inp" style="width:100px" inputmode="decimal" value="'+esc(isB?d.targetYield:d.targetProfit)+'" oninput="upd(\''+(isB?'targetYield':'targetProfit')+'\',this.value)">'+(isB?'<span class="u">%</span>':'')+'</div></div></div>';
+  return h;
 }
-
-/* ============================ section 8 sensitivity + stress ============================ */
-var sensState={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};
-var stressActive=null;
-var SLIDERS=[
-  ['ppMult','Purchase price','mult',0.8,1.2,0.01],
-  ['gdvMult','GDV / sale price','mult',0.8,1.2,0.01],
-  ['refurbMult','Refurbishment cost','mult',0.8,1.2,0.01],
-  ['rateDelta','Interest rate','pp',-5,5,0.25],
-  ['rentMult','Monthly rent','mult',0.8,1.2,0.01],
-  ['monthsDelta','Holding period','mo',-12,12,1]
-];
-function sensSectionHTML(){
-  return '<div class="acc open" id="acc-sens"><div class="head" onclick="toggleAcc(\'sens\')"><div class="n">8</div><div class="t">Risk & Sensitivity Analysis</div><div class="st"></div><div class="car">›</div></div>'+
-    '<div class="body"><div class="hint">Drag to test how each assumption moves the deal. Or hit a one-click stress test.</div>'+
-    '<div id="sliders"></div>'+
+var sens={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0},stressOn=null;
+var SLIDERS=[['ppMult','Purchase price','mult',0.8,1.2,0.01],['gdvMult','End value / GDV','mult',0.8,1.2,0.01],['refurbMult','Refurbishment','mult',0.8,1.2,0.01],['rateDelta','Interest rate','pp',-5,5,0.25],['rentMult','Monthly rent','mult',0.8,1.2,0.01],['monthsDelta','Holding period','mo',-12,12,1]];
+var STRESS=[['Refurb +10%',{refurbMult:1.1}],['Refurb +20%',{refurbMult:1.2}],['Interest +1%',{rateDelta:1}],['Interest +2%',{rateDelta:2}],['Sale −5%',{gdvMult:0.95}],['Sale −10%',{gdvMult:0.9}],['Rent −10%',{rentMult:0.9}],['Vacant 3 mo',{rentMult:0.75}],['Delayed 3 mo',{monthsDelta:3}]];
+function riskTab(){
+  return '<div class="hint">Drag to test each assumption, or tap a stress test. The summary at the top updates too.</div>'+
+    '<div class="grp" id="sliders"></div>'+
     '<h2 class="sec">One-click stress tests</h2><div class="stressgrid" id="stressgrid"></div>'+
-    '<div class="outs" id="sensOut"></div>'+
-    '<button class="mini" style="margin-top:10px" onclick="resetSens()">↺ Reset to base case</button></div></div>';
+    '<div class="grp" id="sensOut"></div>'+
+    '<button class="mini" onclick="resetSens()">↺ Reset to base case</button>'+
+    '<h2 class="sec">Controllable vs non-controllable</h2><div id="ctrlBody"></div>';
 }
-var STRESS=[
-  ['Refurb +10%',{refurbMult:1.1}],['Refurb +20%',{refurbMult:1.2}],
-  ['Interest +1%',{rateDelta:1}],['Interest +2%',{rateDelta:2}],
-  ['Sale price −5%',{gdvMult:0.95}],['Sale price −10%',{gdvMult:0.9}],
-  ['Rent −10%',{rentMult:0.9}],['Vacant 3 months',{rentMult:0.75}],
-  ['Delayed 3 months',{monthsDelta:3}]
-];
-function paintSens(d){
+function paintRisk(d){
   var sl=document.getElementById('sliders');if(!sl)return;
-  sl.innerHTML=SLIDERS.map(s=>{
-    var v=sensState[s[0]];var disp=s[2]==='mult'?(Math.round((v-1)*100)+'%'):s[2]==='pp'?((v>=0?'+':'')+v+'pp'):((v>=0?'+':'')+v+' mo');
-    return '<div class="slider"><div class="top"><span>'+s[1]+'</span><span class="val">'+disp+'</span></div>'+
-      '<input type="range" min="'+s[3]+'" max="'+s[4]+'" step="'+s[5]+'" value="'+v+'" oninput="onSlider(\''+s[0]+'\',this.value)"></div>';
-  }).join('');
-  document.getElementById('stressgrid').innerHTML=STRESS.map((s,i)=>'<button class="stress'+(stressActive===i?' on':'')+'" onclick="applyStress('+i+')">'+s[0]+'</button>').join('');
-  paintSensOut(d);
+  sl.innerHTML=SLIDERS.map(s=>{var v=sens[s[0]];var disp=s[2]==='mult'?(Math.round((v-1)*100)+'%'):s[2]==='pp'?((v>=0?'+':'')+v+'pp'):((v>=0?'+':'')+v+' mo');
+    return '<div class="slider"><div class="t"><span>'+s[1]+'</span><span class="val" id="sr-'+s[0]+'">'+disp+'</span></div><input type="range" min="'+s[3]+'" max="'+s[4]+'" step="'+s[5]+'" value="'+v+'" oninput="onSlider(\''+s[0]+'\',this.value)"></div>';}).join('');
+  document.getElementById('stressgrid').innerHTML=STRESS.map((s,i)=>'<button class="stress'+(stressOn===i?' on':'')+'" onclick="applyStress('+i+')">'+s[0]+'</button>').join('');
+  paintSensOut(d);paintCtrl(calc(d),d);
 }
-function onSlider(k,v){sensState[k]=parseFloat(v);stressActive=null;paintSens(deal());}
-function applyStress(i){
-  if(stressActive===i){resetSens();return;}
-  stressActive=i;sensState={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};
-  Object.assign(sensState,STRESS[i][1]);paintSens(deal());
+function onSlider(k,v){sens[k]=parseFloat(v);stressOn=null;var s=SLIDERS.find(x=>x[0]===k);
+  var disp=s[2]==='mult'?(Math.round((sens[k]-1)*100)+'%'):s[2]==='pp'?((sens[k]>=0?'+':'')+sens[k]+'pp'):((sens[k]>=0?'+':'')+sens[k]+' mo');
+  var r=document.getElementById('sr-'+k);if(r)r.textContent=disp;
+  document.querySelectorAll('.stress').forEach(b=>b.classList.remove('on'));
+  paintSensOut(deal());repaint();}
+function applyStress(i){if(stressOn===i){resetSens();return;}stressOn=i;sens={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};Object.assign(sens,STRESS[i][1]);paintRisk(deal());repaint();}
+function resetSens(){sens={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};stressOn=null;paintRisk(deal());repaint();}
+function paintSensOut(d){var el=document.getElementById('sensOut');if(!el)return;var base=calc(d),sc=calc(d,sens),isB=base.isBtl;
+  function dl(a,b,m){var diff=b-a;return '<span style="color:var(--faint);font-weight:600">('+(diff>=0?'+':'−')+(m?money(Math.abs(diff)).replace('−',''):pct(Math.abs(diff)))+')</span>';}
+  var pf=isB?sc.annualCF:sc.profit,pf0=isB?base.annualCF:base.profit,rv=isB?sc.coc:sc.roi,rv0=isB?base.coc:base.roi,cfv=isB?sc.netCF:sc.profitPM;
+  var sco=healthScores(sc).overall,tl=sco>=70?'green':sco>=45?'amber':'red';
+  el.innerHTML=O(isB?'Annual cash flow':'Profit',money(pf)+' '+dl(pf0,pf,true),pf>=0?'pos':'neg',true)+O(isB?'Cash-on-cash':'ROI',pct(rv)+' '+dl(rv0,rv,false))+O('Monthly cash flow',money(cfv),cfv>=0?'pos':'neg')+O('Equity',money(isB?sc.equity:sc.profit))+'<div class="o big"><span>Scenario verdict</span><span class="p '+tl+'">'+(tl==='green'?'Strong':tl==='amber'?'Marginal':'Poor')+' · '+sco+'/100</span></div>';
 }
-function resetSens(){sensState={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};stressActive=null;paintSens(deal());}
-function paintSensOut(d){
-  var base=calc(d);var sc=calc(d,sensState);var isB=base.isBtl;
-  function delta(a,b,money0){var diff=b-a;var s=(diff>=0?'▲ ':'▼ ')+(money0?money(Math.abs(diff)):pct(Math.abs(diff)));return s;}
-  var profit=isB?sc.annualCF:sc.profit, profit0=isB?base.annualCF:base.profit;
-  var roiv=isB?sc.coc:sc.roi, roi0=isB?base.coc:base.roi;
-  var cf=isB?sc.netCF:sc.profitPM, cf0=isB?base.netCF:base.profitPM;
-  var score=healthScores(sc).overall;var tl=score>=70?'green':score>=45?'amber':'red';
-  var el=document.getElementById('sensOut');if(!el)return;
-  el.innerHTML=
-    O(isB?'Annual cash flow':'Profit',money(profit)+' <span style="color:#8a93a1;font-weight:600">('+delta(profit0,profit,true)+')</span>',profit>=0?'pos':'neg',true)+
-    O(isB?'Cash-on-cash':'ROI',pct(roiv)+' <span style="color:#8a93a1;font-weight:600">('+delta(roi0,roiv,false)+')</span>')+
-    O('Monthly cash flow',money(cf),cf>=0?'pos':'neg')+
-    O('Equity',money(isB?sc.equity:sc.profit))+
-    '<div class="out big"><span>Scenario verdict</span><span class="p '+tl+'" style="font-size:13px">'+(tl==='green'?'Strong':tl==='amber'?'Marginal':'Poor')+' · '+score+'/100</span></div>';
+function paintCtrl(c,d){var el=document.getElementById('ctrlBody');if(!el)return;var ci=[],ni=[];
+  GROUPS.forEach(g=>{if(!vis(g,d.mode))return;g.fields.forEach(f=>{if(f.ctrl==null||f.type==='text'||f.type==='select')return;var val;
+    if(f.k==='depositPct')val=num(d.purchasePrice)*num(d.depositPct)/100;else if(f.k==='arrangeFeePct')val=c.arrange;else if(f.k==='agentPct')val=c.sellAgent;else if(f.type==='num')return;else val=num(d[f.k]);
+    (f.ctrl?ci:ni).push([f.label,val]);});});
+  ni.push(['Stamp Duty',c.stamp]);var ct=ci.reduce((a,x)=>a+x[1],0),nt=ni.reduce((a,x)=>a+x[1],0),p=c.totalProjectCost||1;
+  function tbl(a,tot,l){return '<table class="tbl">'+a.map(x=>'<tr><td>'+x[0]+'</td><td>'+money(x[1])+'</td></tr>').join('')+'<tr class="tot"><td>'+l+' ('+pct(tot/p)+' of cost)</td><td>'+money(tot)+'</td></tr></table>';}
+  el.innerHTML='<div class="grp"><h3>You can control</h3>'+tbl(ci,ct,'Running total')+'</div><div class="grp"><h3>You cannot control</h3>'+tbl(ni,nt,'Running total')+'<div class="hint">Market interest rates, inflation, planning and tax sit behind these — the stress tests show your exposure.</div></div>';
 }
-
-/* ============================ field updates ============================ */
-function upd(k,v){var d=deal();d[k]=(k==='address'||k==='propertyType'||k==='mortgageType'||k==='mortgageBasis')?v:v;save();
-  // mode-changing fields that show/hide sections require re-render
+function repaint(){var d=deal(),c=calc(d);
+  var s=healthScores(c),isB=c.isBtl,band=s.overall>=70?'green':s.overall>=45?'amber':'red';
+  var big=isB?c.annualCF:c.profit,lab=isB?'Expected annual cash flow':'Expected profit';
+  document.getElementById('summary').innerHTML='<div class="top"><div><div class="lab">'+lab+'</div><div class="big '+(big>=0?'pos':'neg')+'">'+money(big)+'</div></div><span class="pill '+band+'">'+(band==='green'?'Strong':band==='amber'?'Marginal':'Poor')+' · '+s.overall+'</span></div>'+
+    '<div class="mini">'+(isB?'Yield <b>'+pct(c.grossYield)+'</b>':'ROI <b>'+pct(c.roi)+'</b>')+' · Cash <b>'+money(c.cashInvested)+'</b> · Max offer <b>'+money(c.mao)+'</b></div>';
+  document.getElementById('sub').textContent=(isB?'Buy to Let':'Flip')+' · '+(d.name||'appraisal');
+  GROUPS.forEach(g=>{var el=document.getElementById('det-'+g.id);if(el)el.innerHTML=detFor(g.id,c);});
+  if(curTab==='summary')document.getElementById('tabc').innerHTML=summaryTab(c,d);
+  if(curTab==='risk')paintRisk(d);
+}
+function upd(k,v){var d=deal();d[k]=v;save();
+  if(k==='mortgageType'||k==='mortgageBasis'){renderTab();repaint();return;}
+  if(curTab==='summary'){renderTab();repaint();return;}
   repaint();}
-function updDep(which,val){var d=deal();var pp=num(d.purchasePrice);
-  if(which==='pct'){d.depositPct=num(val);var a=document.getElementById('dAmt');if(a)a.value=Math.round(pp*num(val)/100);}
+function updDep(w,val){var d=deal(),pp=num(d.purchasePrice);
+  if(w==='pct'){d.depositPct=num(val);var a=document.getElementById('dAmt');if(a)a.value=Math.round(pp*num(val)/100);}
   else{d.depositPct=pp>0?num(val)/pp*100:0;var p=document.getElementById('dPct');if(p)p.value=Math.round(d.depositPct*100)/100;}
   save();repaint();}
 function updNote(id,v){var d=deal();if(!d.notes)d.notes={};d.notes[id]=v;save();}
-function setMode(m){var d=deal();d.mode=m;save();render();}
-
-/* ============================ deals ============================ */
-function newDeal(){var d=defDeal();d.name='Appraisal '+(store.deals.length+1);store.deals.push(d);store.current=d.id;save();sensReset0();render();}
-function sensReset0(){sensState={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};stressActive=null;}
-function switchDeal(id){store.current=id;save();sensReset0();render();}
-function renameDeal(){var d=deal();var n=prompt('Name this appraisal:',d.name);if(n){d.name=n;save();render();}}
-function delDeal(){if(store.deals.length<=1){alert('Keep at least one appraisal.');return;}if(!confirm('Delete this appraisal?'))return;
-  store.deals=store.deals.filter(x=>x.id!==store.current);store.current=store.deals[0].id;save();sensReset0();render();}
-
-/* ============================ backup ============================ */
-function exportJSON(){var b=new Blob([JSON.stringify(store,null,2)],{type:'application/json'});var a=document.createElement('a');
-  a.href=URL.createObjectURL(b);a.download='propdev-appraisals.json';a.click();}
-function importJSON(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();
-  r.onload=function(){try{var d=JSON.parse(r.result);if(d.deals){store=d;if(!store.current)store.current=store.deals[0].id;save();sensReset0();render();}else alert('Not a valid backup.');}catch(err){alert('Could not read file.');}};
-  r.readAsText(f);e.target.value='';}
-
-/* ============================ PDF (real, generated) ============================ */
+function setMode(m){var d=deal();d.mode=m;save();sens={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};stressOn=null;render();}
+function newDeal(){var d=defDeal();d.name='Appraisal '+(store.deals.length+1);store.deals.push(d);store.current=d.id;save();curTab='purchase';render();}
+function switchDeal(id){store.current=id;save();render();}
+function renameDeal(){var d=deal(),n=prompt('Name this appraisal:',d.name);if(n){d.name=n;save();render();}}
+function delDeal(){if(store.deals.length<=1){alert('Keep at least one appraisal.');return;}if(!confirm('Delete this appraisal?'))return;store.deals=store.deals.filter(x=>x.id!==store.current);store.current=store.deals[0].id;save();render();}
+function toggleMenu(e){e.stopPropagation();document.getElementById('menuPop').classList.toggle('open');}
+document.addEventListener('click',()=>document.getElementById('menuPop').classList.remove('open'));
+function exportJSON(){var b=new Blob([JSON.stringify(store,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='propdev-appraisals.json';a.click();}
+function importJSON(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(d.deals){store=d;if(!store.current)store.current=store.deals[0].id;save();render();}else alert('Not a valid backup.');}catch(err){alert('Could not read file.');}};r.readAsText(f);e.target.value='';}
 function pdfText(s){return String(s==null?'':s).replace(/[−–—]/g,'-').replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/∞/g,'inf').replace(/[▲▼·→]/g,'-').replace(/[^\x00-\xFF]/g,'?');}
 function pdfEsc(s){return s.replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)').replace(/[\r\n]/g,' ');}
-function pdfW(s,size){var W={' ':278,',':278,'.':278,'-':333,'%':889,'/':278,'£':556,':':278,'(':333,')':333};var w=0;
-  for(var i=0;i<s.length;i++){var ch=s[i];w+=W[ch]!=null?W[ch]:(ch>='0'&&ch<='9')?556:(ch>='A'&&ch<='Z')?667:500;}return w*size/1000;}
-function makePDF(fname,title,subtitle,sections){
-  var pw=595,ph=842,mL=50,mR=545,top=800,bot=54;var pages=[],pg={t:[],r:[]},y=top;
-  function flush(){pages.push(pg);pg={t:[],r:[]};y=top;}
-  function T(x,yy,f,s,t,c){pg.t.push({x:x,y:yy,f:f,s:s,t:pdfText(t),c:c||[.1,.1,.1]});}
-  function R(x1,x2,yy,c){pg.r.push({x1:x1,x2:x2,y:yy,c:c||[.8,.8,.8]});}
-  function br(h){y-=(h||15);if(y<bot)flush();}
+function pdfW(s,size){var W={' ':278,',':278,'.':278,'-':333,'%':889,'/':278,'£':556,':':278,'(':333,')':333};var w=0;for(var i=0;i<s.length;i++){var ch=s[i];w+=W[ch]!=null?W[ch]:(ch>='0'&&ch<='9')?556:(ch>='A'&&ch<='Z')?667:500;}return w*size/1000;}
+function makePDF(fname,title,subtitle,sections){var pw=595,ph=842,mL=50,mR=545,top=800,bot=54;var pages=[],pg={t:[],r:[]},y=top;
+  function flush(){pages.push(pg);pg={t:[],r:[]};y=top;}function T(x,yy,f,s,t,c){pg.t.push({x,y:yy,f,s,t:pdfText(t),c:c||[.1,.1,.1]});}function R(x1,x2,yy,c){pg.r.push({x1,x2,y:yy,c:c||[.8,.8,.8]});}function br(h){y-=(h||15);if(y<bot)flush();}
   T(mL,y,'F2',18,title,[.12,.22,.39]);br(22);T(mL,y,'F1',10,subtitle,[.42,.42,.42]);br(8);R(mL,mR,y,[.12,.22,.39]);br(18);
-  sections.forEach(sec=>{if(y-34<bot)flush();T(mL,y,'F2',12,sec.h,[.12,.22,.39]);br(4);R(mL,mR,y);br(15);
-    sec.rows.forEach(rw=>{if(y-15<bot)flush();var bold=!!rw[2];var col=bold?[.12,.22,.39]:[.1,.1,.1];
-      T(mL,y,bold?'F2':'F1',11,rw[0],col);var vs=String(rw[1]);T(mR-pdfW(pdfText(vs),11),y,'F2',11,vs,col);br(15);});br(8);});
-  flush();
-  function cs(p){var s='';p.r.forEach(r=>{s+=r.c[0]+' '+r.c[1]+' '+r.c[2]+' RG 0.7 w '+r.x1+' '+r.y+' m '+r.x2+' '+r.y+' l S\n';});
-    s+='BT\n';p.t.forEach(t=>{s+=t.c[0]+' '+t.c[1]+' '+t.c[2]+' rg /'+t.f+' '+t.s+' Tf 1 0 0 1 '+Math.round(t.x*100)/100+' '+Math.round(t.y*100)/100+' Tm ('+pdfEsc(t.t)+') Tj\n';});s+='ET\n';return s;}
-  var out='%PDF-1.4\n%âãÏÓ\n';var off={},cnt=0;
-  function add(b){cnt++;off[cnt]=out.length;out+=cnt+' 0 obj\n'+b+'\nendobj\n';}
+  sections.forEach(sec=>{if(y-34<bot)flush();T(mL,y,'F2',12,sec.h,[.12,.22,.39]);br(4);R(mL,mR,y);br(15);sec.rows.forEach(rw=>{if(y-15<bot)flush();var bold=!!rw[2],col=bold?[.12,.22,.39]:[.1,.1,.1];T(mL,y,bold?'F2':'F1',11,rw[0],col);var vs=String(rw[1]);T(mR-pdfW(pdfText(vs),11),y,'F2',11,vs,col);br(15);});br(8);});
+  flush();function cs(p){var s='';p.r.forEach(r=>{s+=r.c[0]+' '+r.c[1]+' '+r.c[2]+' RG 0.7 w '+r.x1+' '+r.y+' m '+r.x2+' '+r.y+' l S\n';});s+='BT\n';p.t.forEach(t=>{s+=t.c[0]+' '+t.c[1]+' '+t.c[2]+' rg /'+t.f+' '+t.s+' Tf 1 0 0 1 '+Math.round(t.x*100)/100+' '+Math.round(t.y*100)/100+' Tm ('+pdfEsc(t.t)+') Tj\n';});s+='ET\n';return s;}
+  var out='%PDF-1.4\n%âãÏÓ\n',off={},cnt=0;function add(b){cnt++;off[cnt]=out.length;out+=cnt+' 0 obj\n'+b+'\nendobj\n';}
   var kids=[];for(var i=0;i<pages.length;i++)kids.push((5+2*i)+' 0 R');
-  add('<< /Type /Catalog /Pages 2 0 R >>');
-  add('<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+pages.length+' /MediaBox [0 0 '+pw+' '+ph+'] >>');
-  add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
-  add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
-  for(i=0;i<pages.length;i++){add('<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents '+(6+2*i)+' 0 R >>');
-    var c=cs(pages[i]);add('<< /Length '+c.length+' >>\nstream\n'+c+'\nendstream');}
-  var xp=out.length;out+='xref\n0 '+(cnt+1)+'\n0000000000 65535 f \n';
-  for(i=1;i<=cnt;i++)out+=('0000000000'+off[i]).slice(-10)+' 00000 n \n';
-  out+='trailer\n<< /Size '+(cnt+1)+' /Root 1 0 R >>\nstartxref\n'+xp+'\n%%EOF';
-  var by=new Uint8Array(out.length);for(i=0;i<out.length;i++)by[i]=out.charCodeAt(i)&0xFF;
-  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([by],{type:'application/pdf'}));a.download=fname;a.click();
-}
-function exportPDF(){
-  var d=deal();var c=calc(d);var isB=c.isBtl;
-  var secs=[
-    {h:'Headline',rows:[
-      [isB?'Annual cash flow':'Expected profit',isB?money(c.annualCF):money(c.profit),true],
-      ['Monthly cash flow',money(isB?c.netCF:c.profitPM)],
-      [isB?'Cash-on-cash return':'ROI',pct(isB?c.coc:c.roi)],
-      ['Total cash required',money(c.cashInvested)],
-      ['Maximum offer price (MAO)',money(c.mao),true],
-      isB?['Gross yield',pct(c.grossYield)]:['Break-even sale price',money(c.breakEven)]]},
-    {h:'Purchase',rows:[['Address',d.address||'-'],['Purchase price',money(c.pp)],['Market value',money(num(d.marketValue))],['GDV',money(c.gdv)],['Discount below MV',pct(c.discount)],['Floor area',num(d.floorArea)+' m2'],['£/m2 purchase',money(c.ppm2)]]},
+  add('<< /Type /Catalog /Pages 2 0 R >>');add('<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+pages.length+' /MediaBox [0 0 '+pw+' '+ph+'] >>');
+  add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+  for(i=0;i<pages.length;i++){add('<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents '+(6+2*i)+' 0 R >>');var c=cs(pages[i]);add('<< /Length '+c.length+' >>\nstream\n'+c+'\nendstream');}
+  var xp=out.length;out+='xref\n0 '+(cnt+1)+'\n0000000000 65535 f \n';for(i=1;i<=cnt;i++)out+=('0000000000'+off[i]).slice(-10)+' 00000 n \n';out+='trailer\n<< /Size '+(cnt+1)+' /Root 1 0 R >>\nstartxref\n'+xp+'\n%%EOF';
+  var by=new Uint8Array(out.length);for(i=0;i<out.length;i++)by[i]=out.charCodeAt(i)&0xFF;var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([by],{type:'application/pdf'}));a.download=fname;a.click();}
+function exportPDF(){var d=deal(),c=calc(d),isB=c.isBtl;
+  var secs=[{h:'Headline',rows:[[isB?'Annual cash flow':'Expected profit',isB?money(c.annualCF):money(c.profit),true],['Monthly cash flow',money(isB?c.netCF:c.profitPM)],[isB?'Cash-on-cash':'ROI',pct(isB?c.coc:c.roi)],['Total cash needed',money(c.cashInvested)],['Maximum offer price',money(c.mao),true],isB?['Gross yield',pct(c.grossYield)]:['Break-even sale',money(c.breakEven)],['Deal score',healthScores(c).overall+' / 100']]},
+    {h:'Purchase',rows:[['Address',d.address||'-'],['Purchase price',money(c.pp)],['Market value',money(num(d.marketValue))],['End value / GDV',money(c.gdv)],['Discount below MV',pct(c.discount)],['Floor area',num(d.floorArea)+' m2'],['£/m2 purchase',money(c.ppm2)]]},
     {h:'Finance',rows:[['Mortgage type',d.mortgageType],['Mortgage amount',money(c.mortgage)],['LTV',pct(c.ltv)],['Monthly payment',money(c.monthlyPay)],['Interest over project',money(c.financeInterest)],['Total finance costs',money(c.financeCosts),true]]},
     {h:'Acquisition',rows:[['Stamp Duty',money(c.stamp)],['Solicitor',money(num(d.solicitorAcq))],['Searches',money(num(d.searches))],['Survey',money(num(d.survey))],['Land Registry',money(num(d.landRegistry))],['Total acquisition',money(c.acqTotal),true]]},
-    {h:'Refurbishment',rows:[['Subtotal',money(c.rBase)],['Contingency ('+num(d.contingencyPct)+'%)',money(c.contingency)],['Total refurbishment',money(c.refurb),true],['Cost per m2',money(c.refurbm2)],['% of purchase price',pct(c.refurbPctPP)]]},
-    {h:'Holding',rows:[['Monthly (incl. mortgage)',money(c.holdMoIncl)],['Duration',c.months+' months'],['Total holding (excl. mortgage)',money(c.holdTotNonMort),true]]}
-  ];
-  if(isB)secs.push({h:'Rental',rows:[['Monthly rent',money(c.rentM)],['Operating costs / mo',money(c.opMonthly)],['Net cash flow / mo',money(c.netCF)],['Gross yield',pct(c.grossYield)],['Net yield',pct(c.netYield)],['Refinance amount',money(c.newLoan)],['Capital left in deal',money(c.capitalLeftIn)]]});
+    {h:'Refurbishment',rows:[['Subtotal',money(c.rBase)],['Contingency ('+num(d.contingencyPct)+'%)',money(c.contingency)],['Total refurbishment',money(c.refurb),true],['Cost per m2',money(c.refurbm2)],['% of purchase',pct(c.refurbPctPP)]]},
+    {h:'Holding',rows:[['Monthly (incl. mortgage)',money(c.holdMoIncl)],['Duration',c.months+' months'],['Total (excl. mortgage)',money(c.holdTotNonMort),true]]}];
+  if(isB)secs.push({h:'Rental',rows:[['Monthly rent',money(c.rentM)],['Operating costs / mo',money(c.opMonthly)],['Net cash flow / mo',money(c.netCF)],['Gross yield',pct(c.grossYield)],['Net yield',pct(c.netYield)],['Refinance amount',money(c.newLoan)],['Capital left in',money(c.capitalLeftIn)]]});
   else secs.push({h:'Selling',rows:[['Agent fee',money(c.sellAgent)],['Fixed selling costs',money(c.sellFixed)],['Total selling costs',money(c.sellTotal),true]]});
-  secs.push({h:'Totals & returns',rows:[['Total project cost',money(c.totalProjectCost)],[isB?'Equity created':'Profit',money(c.equity),true],['ROCE / return on cash',pct(isB?c.cocLeftIn:c.roce)],['Deal score',healthScores(c).overall+' / 100']]});
-  makePDF((d.name||'appraisal').replace(/[^\w -]/g,'')+'.pdf',d.name||'Appraisal',(isB?'Buy-to-Let':'Flip')+' feasibility - prepared '+today(),secs);
-}
-
-/* ============================ init ============================ */
+  secs.push({h:'Totals & returns',rows:[['Total project cost',money(c.totalProjectCost)],[isB?'Equity created':'Profit',money(c.equity),true],[isB?'Return on cash left in':'ROCE',pct(isB?c.cocLeftIn:c.roce)]]});
+  makePDF((d.name||'appraisal').replace(/[^\w -]/g,'')+'.pdf',d.name||'Appraisal',(isB?'Buy-to-Let':'Flip')+' feasibility - prepared '+today(),secs);}
 load();render();
 </script>
 </body>
