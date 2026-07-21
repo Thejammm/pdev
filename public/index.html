@@ -241,10 +241,10 @@ function calc(d,ov){ov=ov||{};
   var mao=gdv-num(d.targetProfit)-refurb-sellTotal-holdTotNonMort-financeCosts-acqTotal;
   var opMonthly=rentM*(num(d.managementPct)+num(d.maintenancePct)+num(d.voidPct))/100+(num(d.rentInsurance)+num(d.gasSafety)+num(d.electricalInspection)+num(d.licensing)+num(d.groundRent)+num(d.serviceCharge)+num(d.rentOther))/12;
   var netCF=rentM-monthlyPay-opMonthly,annualCF=netCF*12,grossYield=pp>0?rentM*12/pp:0,noiAnnual=rentM*12-opMonthly*12,netYield=(pp+acqTotal+refurb)>0?noiAnnual/(pp+acqTotal+refurb):0,coc=cashInvested>0?annualCF/cashInvested:0;
-  var newLoan=gdv*num(d.refiLTV)/100,refiRelease=Math.max(0,newLoan-mortgage),capitalLeftIn=Math.max(0,cashInvested-refiRelease),cocLeftIn=capitalLeftIn>0?annualCF/capitalLeftIn:(annualCF>0?Infinity:0),equityBtl=gdv-newLoan,maoBtl=num(d.targetYield)>0?rentM*12/(num(d.targetYield)/100):0;
+  var newLoan=gdv*num(d.refiLTV)/100,refiRelease=Math.max(0,newLoan-mortgage),refiPay=newLoan*mrate,refiNetCF=rentM-refiPay-opMonthly,capitalLeftIn=Math.max(0,cashInvested-refiRelease),cocLeftIn=capitalLeftIn>0?(refiNetCF*12)/capitalLeftIn:(refiNetCF>0?Infinity:0),equityBtl=gdv-newLoan,maoBtl=num(d.targetYield)>0?rentM*12/(num(d.targetYield)/100):0;
   var equity=isBtl?equityBtl:profit,maoU=isBtl?maoBtl:mao,discount=num(d.marketValue)>0?(num(d.marketValue)-pp)/num(d.marketValue):0;
   var totalProjectCost=isBtl?(pp+acqTotal+refurb+financeCosts+holdTotNonMort):projectCost;
-  return{pp,gdv,rentM,months,isBtl,isCash,deposit,mortgage,ltv,arrange,financeFees,monthlyPay,financeInterest,financeCosts,stamp,acqTotal,rBase,contingency,refurb,holdMoNonMort,holdTotNonMort,holdMoIncl,holdTotIncl,sellAgent,sellFixed,sellTotal,cashBeforeRefurb,cashInvested,projectCost,totalProjectCost,profit,roi,roce,margin,profitPM,breakEven,mao:maoU,opMonthly,netCF,annualCF,grossYield,netYield,coc,newLoan,refiRelease,capitalLeftIn,cocLeftIn,equity,discount,ppm2:num(d.floorArea)>0?pp/num(d.floorArea):0,gdvm2:num(d.floorArea)>0?gdv/num(d.floorArea):0,refurbm2:num(d.floorArea)>0?refurb/num(d.floorArea):0,refurbPctPP:pp>0?refurb/pp:0};
+  return{pp,gdv,rentM,months,isBtl,isCash,deposit,mortgage,ltv,arrange,financeFees,monthlyPay,financeInterest,financeCosts,stamp,acqTotal,rBase,contingency,refurb,holdMoNonMort,holdTotNonMort,holdMoIncl,holdTotIncl,sellAgent,sellFixed,sellTotal,cashBeforeRefurb,cashInvested,projectCost,totalProjectCost,profit,roi,roce,margin,profitPM,breakEven,mao:maoU,opMonthly,netCF,annualCF,grossYield,netYield,coc,newLoan,refiRelease,refiPay,refiNetCF,capitalLeftIn,cocLeftIn,equity,discount,ppm2:num(d.floorArea)>0?pp/num(d.floorArea):0,gdvm2:num(d.floorArea)>0?gdv/num(d.floorArea):0,refurbm2:num(d.floorArea)>0?refurb/num(d.floorArea):0,refurbPctPP:pp>0?refurb/pp:0};
 }
 function F(k,label,type,unit,tip,cls){return{k,label,type:type||'money',unit:(unit==null?'£':unit),tip:tip||'',adj:cls?cls[0]:'',cert:cls?cls[1]:'',risk:cls?cls[2]:'',ctrl:cls?cls[3]:null};}
 var TYPES=['Terraced house','Semi-detached','Detached','Flat','Bungalow','HMO','Commercial'];
@@ -352,8 +352,8 @@ function restoreCard(id,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.
 function removeCard(id,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.id===id);if(!confirm('Delete “'+((d&&d.name)||'this property')+'” for good? This cannot be undone — use Archive to keep it.'))return;store.deals=store.deals.filter(x=>x.id!==id);if(store.current===id)store.current=store.deals.length?store.deals[0].id:null;save();renderDash();}
 function folioHTML(){
   var saved=store.deals.filter(d=>statusOf(d)==='saved'&&d.mode==='btl');
-  var mo=0,val=0,mort=0,deps=0,stamp=0,buy=0,fin=0,hold=0,reno=0,spent=0;
-  saved.forEach(d=>{var c=calc(d);mo+=c.netCF;val+=c.gdv;mort+=c.mortgage;deps+=c.deposit;stamp+=c.stamp;buy+=(c.acqTotal-c.stamp);fin+=c.financeFees;hold+=c.holdTotNonMort;reno+=c.refurb;spent+=c.cashInvested;});
+  var mo=0,val=0,mort=0,deps=0,stamp=0,buy=0,fin=0,hold=0,reno=0,spent=0,release=0,refiNet=0;
+  saved.forEach(d=>{var c=calc(d);mo+=c.netCF;val+=c.gdv;mort+=c.mortgage;deps+=c.deposit;stamp+=c.stamp;buy+=(c.acqTotal-c.stamp);fin+=c.financeFees;hold+=c.holdTotNonMort;reno+=c.refurb;spent+=c.cashInvested;release+=c.refiRelease;refiNet+=c.refiNetCF;});
   var b=store.borrow,off=num(b.monthly),pers=num(b.amount),left=pers-spent,equity=val-mort,net=mo-off;
   var h='<div class="folio"><h4>Your capital — spent vs left ('+saved.length+' rental'+(saved.length===1?'':'s')+')</h4>'+
     '<div class="frow"><span>Deposits</span><b>'+money(deps)+'</b></div>'+
@@ -368,6 +368,10 @@ function folioHTML(){
     '<div class="fsep"></div>'+
     '<div class="frow"><span>Total property value</span><b>'+money(val)+'</b></div>'+
     '<div class="frow"><span>Equity (value − mortgages)</span><b>'+money(equity)+'</b></div>'+
+    '<div class="fsep"></div>'+
+    '<div class="frow"><span>Cash you can pull out (refinance)</span><b style="color:var(--green)">'+money(release)+'</b></div>'+
+    '<div class="frow"><span>Capital to reinvest after that</span><b>'+money(left+release)+'</b></div>'+
+    '<div class="frow"><span>Income after refinancing</span><b>'+money(refiNet)+'/mo</b></div>'+
     '<div class="fsep"></div>'+
     '<div class="frow"><span>Monthly income (after mortgage)</span><b>'+money(mo)+'</b></div>'+
     '<div class="frow"><span>Weekly</span><b>'+money(mo*12/52)+'</b></div>'+
@@ -488,6 +492,7 @@ function scorecardTab(c,d){
   var run=c.monthlyPay+c.opMonthly,totalRet10=c.netCF*120+gain10;
   var h='<div class="sc-hero"><div class="lab">You keep each month</div><div class="big '+(c.netCF>=0?'pos':'neg')+'">'+money(c.netCF)+'/mo</div><div class="sub">'+money(c.annualCF)+' a year · '+pct(c.grossYield)+' gross yield</div></div>';
   h+='<h2 class="sec">The monthly picture</h2><div class="kv">'+O('Rent it brings in',money(c.rentM)+'/mo')+O('Running costs (incl. mortgage)','−'+money(run)+'/mo','neg','','Mortgage '+money(c.monthlyPay)+' + running costs '+money(c.opMonthly)+'.')+O('You keep (net)',money(c.netCF)+'/mo',c.netCF>=0?'pos':'neg',true,'Rent − mortgage − running costs.')+O('Cash you put in',money(c.cashInvested))+'</div>';
+  h+='<h2 class="sec">Do it up, let it, then refinance</h2><div class="hint">Once the works add value and it’s let, refinance at '+num(d.refiLTV)+'% of the value to pull your capital back out. Set the refinance LTV on the Finance tab.</div><div class="kv">'+O('Value after works (GDV)',money(c.gdv))+O('New mortgage at '+num(d.refiLTV)+'% LTV',money(c.newLoan),'','','Value × refinance LTV.')+O('Cash you can pull out',money(c.refiRelease),'pos',true,'New mortgage − your current mortgage.')+O('Capital left in the deal',money(c.capitalLeftIn),'','','What you spent − the cash you pull out. A good BRRR leaves little or none in.')+O('New mortgage payment',money(c.refiPay)+'/mo','neg','','Up from '+money(c.monthlyPay)+'/mo before refinancing.')+O('Net income after refinancing',money(c.refiNetCF)+'/mo',c.refiNetCF>=0?'pos':'neg',true,'Rent − the new (higher) mortgage − running costs. Check the rent still covers it.')+'</div>';
   h+='<h2 class="sec">If the property grows in value</h2><div class="hint">UK house prices have risen about 5% a year on average over the long term (ONS House Price Index). Pick a rate:</div>';
   h+='<div class="growseg">'+[3,4,5,7].map(p=>'<button class="'+(gp===p?'on':'')+'" onclick="setGrowth('+p+')">'+p+'%/yr</button>').join('')+'</div>';
   h+='<div class="kv">'+O('Value today',money(base))+O('In 5 years',money(v5)+' (+'+money(gain5)+')','pos')+O('In 10 years',money(v10)+' (+'+money(gain10)+')','pos')+O('Total return over 10 years',money(totalRet10),totalRet10>=0?'pos':'neg',true,'Rent you keep over 10 years ('+money(c.netCF*120)+') + value growth ('+money(gain10)+'). Rough guide — ignores rent rises and remortgaging.')+'</div>';
