@@ -100,8 +100,9 @@
   .filters{display:flex;gap:7px;margin:4px 0 12px;flex-wrap:wrap}
   .chip{background:#fff;border:1px solid var(--line);border-radius:20px;padding:7px 13px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer}
   .chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
-  .pcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer}
-  .pcard:active{background:#fbfcfe}
+  .pcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:10px}
+  .pctop{display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer}
+  .pctop:active{opacity:.7}
   .pcname{font-size:15px;font-weight:700}
   .pcmeta{font-size:12px;color:var(--muted);margin-top:2px}
   .pcright{text-align:right;flex:none}
@@ -146,10 +147,10 @@
   .growseg{display:flex;gap:6px;margin:2px 0 10px}
   .growseg button{flex:1;border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer}
   .growseg button.on{background:var(--btl);color:#fff;border-color:var(--btl)}
-  .pcbtns{display:flex;gap:13px;justify-content:flex-end;margin-top:5px}
-  .pcact{background:none;border:none;color:#8a93a1;font-size:12px;font-weight:700;cursor:pointer;padding:5px 0 0}
-  .pcact:active{color:var(--navy)}
-  .pcdel{background:none;border:none;color:#b7bdc9;font-size:12px;font-weight:700;cursor:pointer;padding:5px 0 0}
+  .pcbtns{display:flex;gap:16px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line)}
+  .pcact{background:none;border:none;color:var(--accent);font-size:12.5px;font-weight:700;cursor:pointer;padding:0}
+  .pcact:active{opacity:.6}
+  .pcdel{background:none;border:none;color:#b7bdc9;font-size:12.5px;font-weight:700;cursor:pointer;padding:0;margin-left:auto}
   .pcdel:active{color:var(--red)}
   /* collapsible group */
   .ghead{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:13px 2px;font-size:14px;font-weight:700}
@@ -338,10 +339,11 @@ function renderDash(){
 function cardHTML(d){var c=calc(d),isB=d.mode==='btl',val=isB?c.netCF:c.profit;
   var big=isB?money(c.netCF)+'/mo':money(c.profit),lab=isB?'monthly cash flow':'profit';
   var meta='<span class="modetag '+d.mode+'">'+(isB?'BTL':'FLIP')+'</span> '+money(c.pp)+(isB?' · '+pct(c.grossYield)+' yield':' · GDV '+money(c.gdv));
-  return '<div class="pcard '+d.mode+'" onclick="openDeal(\''+d.id+'\')"><div><div class="pcname">'+esc(d.name||'Untitled')+'</div><div class="pcmeta">'+meta+'</div></div>'+
+  var arch=statusOf(d)==='archived';
+  return '<div class="pcard '+d.mode+'"><div class="pctop" onclick="openDeal(\''+d.id+'\')"><div><div class="pcname">'+esc(d.name||'Untitled')+'</div><div class="pcmeta">'+meta+'</div></div>'+
     '<div class="pcright"><div class="cardtog" onclick="event.stopPropagation()"><button class="'+(!isB?'on':'')+'" onclick="cardMode(\''+d.id+'\',\'flip\',event)">Flip</button><button class="'+(isB?'on':'')+'" onclick="cardMode(\''+d.id+'\',\'btl\',event)">BTL</button></div>'+
-    '<div class="pcbig '+(val>=0?'pos':'neg')+'">'+big+'</div><div class="pclab">'+lab+'</div>'+
-    '<div class="pcbtns">'+(statusOf(d)==='archived'?'<button class="pcact" onclick="restoreCard(\''+d.id+'\',event)">Restore</button>':'<button class="pcact" onclick="archiveCard(\''+d.id+'\',event)">Archive</button>')+'<button class="pcdel" onclick="removeCard(\''+d.id+'\',event)">Delete</button></div></div></div>';
+    '<div class="pcbig '+(val>=0?'pos':'neg')+'">'+big+'</div><div class="pclab">'+lab+'</div></div></div>'+
+    '<div class="pcbtns">'+(arch?'<button class="pcact" onclick="restoreCard(\''+d.id+'\',event)">＋ Add to dashboard</button>':'<button class="pcact" onclick="archiveCard(\''+d.id+'\',event)">Remove from dashboard</button>')+'<button class="pcdel" onclick="removeCard(\''+d.id+'\',event)">Delete for good</button></div></div>';
 }
 function archiveCard(id,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.id===id);if(!d)return;d.status='archived';save();renderDash();toast('Off the dashboard — kept under Archived');}
 function restoreCard(id,e){if(e)e.stopPropagation();var d=store.deals.find(x=>x.id===id);if(!d)return;d.status='saved';save();renderDash();toast('Restored to the dashboard');}
