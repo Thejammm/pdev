@@ -218,8 +218,9 @@ function lsSet(k,v){try{if(HAS_LS)localStorage.setItem(k,v);else MEM[k]=v;}catch
 var KEY='pdevPro_v1';var store={deals:[],current:null};
 function load(){var r=lsGet(KEY);if(r){try{store=JSON.parse(r);}catch(e){}}if(!store.deals)store.deals=[];
   if(!store.borrow)store.borrow={amount:165000,monthly:914,on:false};
-  if(!store.cmpRows)store.cmpRows=['purchase','gdv','cash','potleft','headline','monthly','return','mao','score'];
+  if(!store.cmpRows)store.cmpRows=['purchase','gdv','cash','potleft','headline','monthly','mortgage','return','mao','score'];
   if(!store.cmpMig){var ci=store.cmpRows.indexOf('cash');if(store.cmpRows.indexOf('potleft')<0)store.cmpRows.splice(ci>=0?ci+1:store.cmpRows.length,0,'potleft');store.cmpMig=1;}
+  if(!store.cmpMig2){if(store.cmpRows.indexOf('mortgage')<0){var mi=store.cmpRows.indexOf('monthly');store.cmpRows.splice(mi>=0?mi+1:store.cmpRows.length,0,'mortgage');}store.cmpMig2=1;}
   store.deals.forEach(d=>{if(!d.status)d.status='saved';});
   if(!store.deals.length){var d=defDeal();d.status='saved';store.deals.push(d);store.current=d.id;}
   if(!store.current)store.current=store.deals.length?store.deals[0].id:null;}
@@ -441,6 +442,7 @@ var METRICS=[
   {k:'potleft',label:'Capital left (of pot)',fn:c=>num(store.borrow.amount)-c.cashInvested,fmt:v=>money(v),better:'hi'},
   {k:'headline',label:'Profit / cash flow',fn:(c,d)=>d.mode==='btl'?c.annualCF:c.profit,fmt:(v,x)=>money(v)+'<span class="csub">'+(x.d.mode==='btl'?'/yr':'total')+'</span>',better:'hi'},
   {k:'monthly',label:'Monthly',fn:(c,d)=>d.mode==='btl'?c.netCF:c.profitPM,fmt:v=>money(v)+'/mo',better:'hi'},
+  {k:'mortgage',label:'Mortgage payment',fn:c=>c.monthlyPay,fmt:v=>money(v)+'/mo',better:'lo'},
   {k:'return',label:'Return on cash',fn:(c,d)=>d.mode==='btl'?c.coc:c.roi,fmt:v=>pct(v),better:'hi'},
   {k:'yield',label:'Gross yield',mode:'btl',fn:c=>c.grossYield,fmt:v=>pct(v),better:'hi'},
   {k:'mao',label:'Max offer',fn:c=>c.mao,fmt:v=>money(v),better:'hi'},
@@ -457,7 +459,7 @@ var METRICS=[
 function toggleCmpSettings(){cmpSettingsOpen=!cmpSettingsOpen;renderCompare();}
 function toggleCmpRow(k){var i=store.cmpRows.indexOf(k);if(i>=0)store.cmpRows.splice(i,1);else store.cmpRows.push(k);save();renderCompare();}
 function cmpSettingsHTML(){return '<div class="cmpset"><div class="cmpset-h">Choose what to compare</div>'+METRICS.map(mt=>'<label class="cmprow"><input type="checkbox" '+(store.cmpRows.indexOf(mt.k)>=0?'checked':'')+' onchange="toggleCmpRow(\''+mt.k+'\')"><span>'+mt.label+'</span></label>').join('')+'</div>';}
-var METRIC_TAB={purchase:'purchase',gdv:'purchase',cash:'summary',potleft:'summary',headline:'summary',monthly:'summary',return:'summary',yield:'summary',mao:'summary',score:'summary',equity:'summary',pullout:'scorecard',capleft:'scorecard',ppm2:'purchase',stamp:'costs',deposit:'finance',refurb:'costs',breakeven:'scorecard'};
+var METRIC_TAB={purchase:'purchase',gdv:'purchase',cash:'summary',potleft:'summary',headline:'summary',monthly:'summary',mortgage:'finance',return:'summary',yield:'summary',mao:'summary',score:'summary',equity:'summary',pullout:'scorecard',capleft:'scorecard',ppm2:'purchase',stamp:'costs',deposit:'finance',refurb:'costs',breakeven:'scorecard'};
 function drillTo(id,tab){store.current=id;view='deal';curTab=tab||'summary';sens={ppMult:1,gdvMult:1,refurbMult:1,rateDelta:0,rentMult:1,monthsDelta:0};stressOn=null;render();window.scrollTo(0,0);}
 function exportComparePDF(){
   var nonArch=store.deals.filter(d=>statusOf(d)!=='archived');
