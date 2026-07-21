@@ -1,0 +1,12 @@
+{
+  "name": "pdev",
+  "version": "1.0.0",
+  "description": "PropDev Deal Screener — personal static app (Archer)",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
