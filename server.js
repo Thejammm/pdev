@@ -18,8 +18,10 @@ const server = http.createServer((req, res) => {
   if (url === '/healthz') { res.writeHead(200, { 'Content-Type': 'text/plain' }); return res.end('ok'); }
   if (url === '/' || url === '') url = '/index.html';
   const rel = path.normalize(url).replace(/^([/\\])+/, '');
-  const file = path.join(DIR, rel);
+  let file = path.join(DIR, rel);
   if (!file.startsWith(DIR)) { res.writeHead(403); return res.end('Forbidden'); }
+  // extensionless routing: /pro -> /pro.html
+  if (!path.extname(file) && !fs.existsSync(file) && fs.existsSync(file + '.html')) file += '.html';
   fs.readFile(file, (err, data) => {
     if (err) { res.writeHead(404, { 'Content-Type': 'text/plain' }); return res.end('Not found'); }
     res.writeHead(200, {
