@@ -617,6 +617,7 @@ function scorecardTab(c,d){
     h+=bar+'<div class="sc-leg"><span><i style="background:var(--navy)"></i>Costs '+money(cost)+'</span><span><i style="background:var(--green)"></i>Profit '+money(profit)+(gdv>0?' ('+pct(c.margin)+')':'')+'</span><span class="tot">Sells for '+money(gdv)+'</span></div>';
     h+='<h2 class="sec">The purchase</h2><div class="kv">'+O('Purchase price',money(c.pp))+O('Your deposit',money(c.deposit),'','','At '+num(d.depositPct)+'% of the price.')+O('Mortgage / bridging loan',money(c.mortgage),'',true,'Purchase price − your deposit — the loan you take on ('+pct(c.ltv)+' LTV).')+'</div>';
     h+='<div class="kv">'+O('It costs you (all in)',money(cost),'','','Purchase + acquisition + refurbishment + finance + holding + selling.')+O('It sells for (GDV)',money(gdv))+O('Cash you tie up',money(c.cashInvested),'','','The deposit and costs you fund yourself.')+O('You keep (profit)',money(profit),profit>=0?'pos':'neg',true,'Sale price − everything it costs you.')+'</div>';
+    h+=pdfPickerHTML(d);h+='<button class="pdfbtn" onclick="exportPDF()">Export appraisal (PDF)</button>';
     return h;
   }
   var gp=num(d.growthPct)||5,g=gp/100,base=num(d.gdv)||num(d.marketValue)||c.pp;
@@ -640,6 +641,7 @@ function scorecardTab(c,d){
     h+='<tr><th>In '+y+' years</th><td class="gval">'+money(val)+'<span class="gsub gval">+'+money(gain)+' growth</span></td><td class="grent">'+money(rent)+'</td><td class="gtot">'+money(tot)+'</td></tr>';});
   h+='</tbody></table>';
   h+='<div class="ghint"><b class="gval" style="color:var(--accent)">Value growth</b> is what the property gains in worth. <b class="grent" style="color:var(--green)">Rent kept</b> is the net cash you pocket each month ('+money(c.netCF)+'/mo after mortgage &amp; costs) added up over the years. Total gain gives you both together. Rough guide — ignores rent rises, remortgaging and selling costs.</div>';
+  h+=pdfPickerHTML(d);h+='<button class="pdfbtn" onclick="exportPDF()">Export appraisal (PDF)</button>';
   return h;
 }
 function setGrowth(p){deal().growthPct=p;save();renderTab();}
