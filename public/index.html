@@ -498,7 +498,7 @@ function exportComparePDF(){
     var label=ordered.length<=3?'Side by side':(group.length>1?('Properties '+(g+1)+'-'+(g+group.length)):('Property '+(g+1)));
     secs.push({h:label,cols:cols,rows:body});
   }
-  makePDF('property-comparison.pdf','Property comparison',ordered.length+' properties - prepared '+today(),secs);
+  makePDF('property-comparison.pdf','Property comparison',ordered.length+' properties compared side by side',secs,{accent:[.12,.22,.39],kicker:'Portfolio Comparison',date:today()});
 }
 function compareTable(sel){
   var cs=sel.map(d=>({d:d,c:calc(d)}));
@@ -735,23 +735,83 @@ function importJSON(e){var f=e.target.files[0];if(!f)return;var r=new FileReader
 function pdfText(s){return String(s==null?'':s).replace(/[−–—]/g,'-').replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/∞/g,'inf').replace(/[▲▼·→]/g,'-').replace(/[^\x00-\xFF]/g,'?');}
 function pdfEsc(s){return s.replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)').replace(/[\r\n]/g,' ');}
 function pdfW(s,size){var W={' ':278,',':278,'.':278,'-':333,'%':889,'/':278,'£':556,':':278,'(':333,')':333};var w=0;for(var i=0;i<s.length;i++){var ch=s[i];w+=W[ch]!=null?W[ch]:(ch>='0'&&ch<='9')?556:(ch>='A'&&ch<='Z')?667:500;}return w*size/1000;}
-function makePDF(fname,title,subtitle,sections){var pw=595,ph=842,mL=50,mR=545,top=800,bot=54;var pages=[],pg={t:[],r:[]},y=top;
-  function flush(){pages.push(pg);pg={t:[],r:[]};y=top;}function T(x,yy,f,s,t,c){pg.t.push({x,y:yy,f,s,t:pdfText(t),c:c||[.1,.1,.1]});}function R(x1,x2,yy,c){pg.r.push({x1,x2,y:yy,c:c||[.8,.8,.8]});}function br(h){y-=(h||15);if(y<bot)flush();}
-  T(mL,y,'F2',18,title,[.12,.22,.39]);br(22);T(mL,y,'F1',10,subtitle,[.42,.42,.42]);br(8);R(mL,mR,y,[.12,.22,.39]);br(18);
-  sections.forEach(sec=>{if(y-34<bot)flush();T(mL,y,'F2',12,sec.h,[.12,.22,.39]);br(4);R(mL,mR,y);br(15);
-    if(sec.cols){var nc=sec.cols.length,cs0=mL+150,cw=(mR-cs0)/nc;
-      sec.cols.forEach((ch,j)=>{var cx=cs0+cw*(j+1),s=String(ch);T(cx-pdfW(pdfText(s),9)-2,y,'F2',9,s,[.12,.22,.39]);});br(5);R(mL,mR,y);br(14);
-      sec.rows.forEach(rw=>{if(y-14<bot)flush();T(mL,y,'F1',10,rw[0],[.1,.1,.1]);for(var j=0;j<nc;j++){var cx=cs0+cw*(j+1),s=String(rw[j+1]);T(cx-pdfW(pdfText(s),10)-2,y,'F2',10,s,[.1,.1,.1]);}br(14);});br(8);
-    }else{sec.rows.forEach(rw=>{if(y-15<bot)flush();var bold=!!rw[2],col=bold?[.12,.22,.39]:[.1,.1,.1];T(mL,y,bold?'F2':'F1',11,rw[0],col);var vs=String(rw[1]);T(mR-pdfW(pdfText(vs),11),y,'F2',11,vs,col);br(15);});br(8);}
+function makePDF(fname,title,subtitle,sections,opts){
+  opts=opts||{};
+  var pw=595,ph=842,mL=50,mR=545,cW=mR-mL,top=762,bot=60;
+  var AC=opts.accent||[.12,.22,.39],INK=[.12,.13,.16],MUT=[.42,.42,.45],WHT=[1,1,1],BAND=[.13,.15,.19],PANEL=[.945,.95,.955];
+  var kicker=opts.kicker||'Property Development Appraisal',dstr=opts.date||today();
+  var pages=[],pg={t:[],l:[],f:[]},y=top;
+  function flush(){pages.push(pg);pg={t:[],l:[],f:[]};y=top;}
+  function T(x,yy,f,s,t,c){pg.t.push({x:x,y:yy,f:f,s:s,t:pdfText(t),c:c||INK});}
+  function TR(xr,yy,f,s,t,c){var str=pdfText(t);T(xr-pdfW(str,s),yy,f,s,str,c);}
+  function TC(xc,yy,f,s,t,c){var str=pdfText(t);T(xc-pdfW(str,s)/2,yy,f,s,str,c);}
+  function R(x1,x2,yy,c,w){pg.l.push({x1:x1,y1:yy,x2:x2,y2:yy,c:c||[.8,.8,.8],w:w||0.7});}
+  function LN(x1,y1,x2,y2,c,w){pg.l.push({x1:x1,y1:y1,x2:x2,y2:y2,c:c||[.8,.8,.8],w:w||0.7});}
+  function FR(x,yTop,w,h,c){pg.f.push({x:x,y:yTop-h,w:w,h:h,c:c});}
+  function br(h){y-=(h==null?15:h);if(y<bot)flush();}
+  T(mL,y,'F2',21,title,INK);br(24);
+  T(mL,y,'F1',10.5,subtitle,MUT);br(9);
+  R(mL,mR,y,AC,1.4);br(16);
+  if(opts.glance&&opts.glance.length){
+    var G=opts.glance,H=72,yTop=y;
+    FR(mL,yTop,cW,H,PANEL);
+    T(mL+14,yTop-16,'F2',8,'AT A GLANCE',AC);
+    var tw=cW/G.length;
+    G.forEach(function(gi,i){
+      if(i>0)LN(mL+tw*i,yTop-24,mL+tw*i,yTop-H+10,[.82,.83,.85],0.7);
+      var cx=mL+tw*(i+0.5),vs=pdfText(gi.val),vsz=15;
+      if(pdfW(vs,vsz)>tw-12)vsz=12;if(pdfW(vs,vsz)>tw-12)vsz=10.5;
+      TC(cx,yTop-46,'F2',vsz,gi.val,gi.c||INK);
+      TC(cx,yTop-61,'F1',8,String(gi.lab).toUpperCase(),MUT);
+    });
+    y=yTop-H;br(20);
+  }
+  sections.forEach(function(sec){
+    if(y-40<bot)flush();
+    FR(mL,y+9,7,7,AC);
+    T(mL+13,y,'F2',12,sec.h,INK);br(6);
+    R(mL,mR,y,AC,1.1);br(15);
+    if(sec.cols){
+      var nc=sec.cols.length,cs0=mL+150,cw=(mR-cs0)/nc;
+      sec.cols.forEach(function(ch,j){var cx=cs0+cw*(j+1);TR(cx-2,y,'F2',9,String(ch),AC);});br(5);R(mL,mR,y,[.8,.8,.8],0.7);br(14);
+      sec.rows.forEach(function(rw){if(y-14<bot)flush();T(mL,y,'F1',10,rw[0],INK);for(var j=0;j<nc;j++){var cx=cs0+cw*(j+1);TR(cx-2,y,'F2',10,String(rw[j+1]),INK);}br(14);});br(10);
+    }else{
+      sec.rows.forEach(function(rw){if(y-15<bot)flush();var bold=!!rw[2],col=bold?AC:INK;if(bold)R(mL,mR,y+11,[.86,.87,.89],0.7);T(mL,y,bold?'F2':'F1',11,rw[0],bold?INK:[.2,.2,.23]);TR(mR,y,'F2',11,String(rw[1]),col);br(15);});br(10);
+    }
   });
-  flush();function cs(p){var s='';p.r.forEach(r=>{s+=r.c[0]+' '+r.c[1]+' '+r.c[2]+' RG 0.7 w '+r.x1+' '+r.y+' m '+r.x2+' '+r.y+' l S\n';});s+='BT\n';p.t.forEach(t=>{s+=t.c[0]+' '+t.c[1]+' '+t.c[2]+' rg /'+t.f+' '+t.s+' Tf 1 0 0 1 '+Math.round(t.x*100)/100+' '+Math.round(t.y*100)/100+' Tm ('+pdfEsc(t.t)+') Tj\n';});s+='ET\n';return s;}
+  flush();
+  function r2(n){return Math.round(n*100)/100;}
+  function band(c,x,yb,w,h){return c[0]+' '+c[1]+' '+c[2]+' rg '+r2(x)+' '+r2(yb)+' '+r2(w)+' '+r2(h)+' re f\n';}
+  function line(c,x1,y1,x2,y2,w){return c[0]+' '+c[1]+' '+c[2]+' RG '+w+' w '+r2(x1)+' '+r2(y1)+' m '+r2(x2)+' '+r2(y2)+' l S\n';}
+  function txt(c,f,s,x,yy,t){return c[0]+' '+c[1]+' '+c[2]+' rg /'+f+' '+s+' Tf 1 0 0 1 '+r2(x)+' '+r2(yy)+' Tm ('+pdfEsc(pdfText(t))+') Tj\n';}
+  function txtR(c,f,s,xr,yy,t){var str=pdfText(t);return txt(c,f,s,xr-pdfW(str,s),yy,str);}
+  function cs(p,idx,total){
+    var s='';
+    s+=band(BAND,0,ph-58,pw,58);
+    p.f.forEach(function(fr){s+=band(fr.c,fr.x,fr.y,fr.w,fr.h);});
+    s+=line(AC,mL,ph-64,mR,ph-64,1.6);
+    s+=line([.5,.5,.52],mL,ph-67.5,mR,ph-67.5,0.6);
+    s+=line([.75,.75,.77],mL,46,mR,46,0.7);
+    p.l.forEach(function(l){s+=line(l.c,l.x1,l.y1,l.x2,l.y2,l.w);});
+    s+='BT\n';
+    s+=txt(WHT,'F2',22,mL,ph-36,'PropDev');
+    s+=txt([.76,.78,.82],'F1',8,mL,ph-49,kicker.toUpperCase());
+    s+=txtR([.82,.84,.88],'F1',9,mR,ph-36,dstr);
+    s+=txtR([.6,.62,.66],'F1',7.5,mR,ph-49,'APPRAISAL REPORT');
+    s+=txt([.5,.5,.53],'F1',8,mL,34,'PropDev  ·  pdev.archerhs.co.uk');
+    s+=txtR([.5,.5,.53],'F1',8,mR,34,'Page '+idx+' of '+total+'  ·  '+dstr);
+    p.t.forEach(function(t){s+=txt(t.c,t.f,t.s,t.x,t.y,t.t);});
+    s+='ET\n';
+    return s;
+  }
   var out='%PDF-1.4\n%âãÏÓ\n',off={},cnt=0;function add(b){cnt++;off[cnt]=out.length;out+=cnt+' 0 obj\n'+b+'\nendobj\n';}
   var kids=[];for(var i=0;i<pages.length;i++)kids.push((5+2*i)+' 0 R');
   add('<< /Type /Catalog /Pages 2 0 R >>');add('<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+pages.length+' /MediaBox [0 0 '+pw+' '+ph+'] >>');
   add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
-  for(i=0;i<pages.length;i++){add('<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents '+(6+2*i)+' 0 R >>');var c=cs(pages[i]);add('<< /Length '+c.length+' >>\nstream\n'+c+'\nendstream');}
+  for(i=0;i<pages.length;i++){add('<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents '+(6+2*i)+' 0 R >>');var c=cs(pages[i],i+1,pages.length);add('<< /Length '+c.length+' >>\nstream\n'+c+'\nendstream');}
   var xp=out.length;out+='xref\n0 '+(cnt+1)+'\n0000000000 65535 f \n';for(i=1;i<=cnt;i++)out+=('0000000000'+off[i]).slice(-10)+' 00000 n \n';out+='trailer\n<< /Size '+(cnt+1)+' /Root 1 0 R >>\nstartxref\n'+xp+'\n%%EOF';
-  var by=new Uint8Array(out.length);for(i=0;i<out.length;i++)by[i]=out.charCodeAt(i)&0xFF;var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([by],{type:'application/pdf'}));a.download=fname;a.click();}
+  var by=new Uint8Array(out.length);for(i=0;i<out.length;i++)by[i]=out.charCodeAt(i)&0xFF;var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([by],{type:'application/pdf'}));a.download=fname;a.click();
+}
 function exportPDF(){var d=deal(),c=calc(d),isB=c.isBtl;
   var gp=num(d.growthPct)||5,g=gp/100,base=num(d.gdv)||num(d.marketValue)||c.pp;
   var secs=[];
@@ -772,7 +832,11 @@ function exportPDF(){var d=deal(),c=calc(d),isB=c.isBtl;
   secs.push({h:'Finance costs',rows:[['Arrangement fee',money(c.arrange)],['Broker fee',money(num(d.brokerFee))],['Valuation fee',money(num(d.valuationFee))],['Interest over project',money(c.financeInterest)],['Total finance costs',money(c.financeCosts),true]]});
   if(!isB)secs.push({h:'Selling costs',rows:[['Agent fee',money(c.sellAgent)],['Fixed selling costs',money(c.sellFixed)],['Total selling costs',money(c.sellTotal),true]]});
   secs.push({h:'Totals & returns',rows:[['Total project cost',money(c.totalProjectCost)],['Total cash needed',money(c.cashInvested)],[isB?'Equity created':'Profit',money(c.equity),true],[isB?'Return on cash left in':'ROCE',pct(isB?c.cocLeftIn:c.roce)]]});
-  makePDF((d.name||'appraisal').replace(/[^\w -]/g,'')+'.pdf',d.name||'Appraisal',(isB?'Buy-to-Let':'Flip')+' full appraisal - prepared '+today(),secs);}
+  var posc=[.16,.5,.34],negc=[.75,.25,.25];
+  var glance=isB?[{lab:'Deal score',val:healthScores(c).overall+'/100'},{lab:'Net cash flow',val:money(c.netCF)+'/mo',c:c.netCF>=0?posc:negc},{lab:'Gross yield',val:pct(c.grossYield)},{lab:'Cash needed',val:money(c.cashInvested)}]
+    :[{lab:'Deal score',val:healthScores(c).overall+'/100'},{lab:'Profit',val:money(c.profit),c:c.profit>=0?posc:negc},{lab:'ROI',val:pct(c.roi)},{lab:'Cash needed',val:money(c.cashInvested)}];
+  var accent=isB?[.12,.56,.47]:[.78,.45,.18];
+  makePDF((d.name||'appraisal').replace(/[^\w -]/g,'')+'.pdf',d.name||'Appraisal',(isB?'Buy-to-Let investment appraisal':'Flip / development appraisal'),secs,{accent:accent,kicker:(isB?'Buy-to-Let Investment Appraisal':'Flip / Development Appraisal'),glance:glance,date:today()});}
 load();render();
 </script>
 </body>
