@@ -568,7 +568,7 @@ function renderTab(){
   else if(curTab==='scorecard')h=scorecardTab(c,d);
   else{var gs=GROUPS.filter(g=>g.tab===curTab);
     gs.forEach(g=>{h+=groupCard(d,g);});
-    if(curTab==='costs')h+='<button class="pdfbtn" onclick="exportPDF()">Export full appraisal (PDF)</button>';}
+    if(curTab==='costs'){h+=pdfPickerHTML(d);h+='<button class="pdfbtn" onclick="exportPDF()">Export full appraisal (PDF)</button>';}}
   document.getElementById('tabc').innerHTML=h;
 }
 function toggleDet(id){detOpen[id]=!detOpen[id];var p=document.getElementById('det-'+id),t=p.previousElementSibling;
@@ -812,29 +812,42 @@ function makePDF(fname,title,subtitle,sections,opts){
   var xp=out.length;out+='xref\n0 '+(cnt+1)+'\n0000000000 65535 f \n';for(i=1;i<=cnt;i++)out+=('0000000000'+off[i]).slice(-10)+' 00000 n \n';out+='trailer\n<< /Size '+(cnt+1)+' /Root 1 0 R >>\nstartxref\n'+xp+'\n%%EOF';
   var by=new Uint8Array(out.length);for(i=0;i<out.length;i++)by[i]=out.charCodeAt(i)&0xFF;var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([by],{type:'application/pdf'}));a.download=fname;a.click();
 }
-function exportPDF(){var d=deal(),c=calc(d),isB=c.isBtl;
+function pdfCatalog(isB){var c=[{k:'glance',label:'At a glance (key figures)'},{k:'headline',label:'Headline summary'},{k:'purchase',label:'The purchase'}];
+  if(isB){c.push({k:'monthly',label:'Rent vs mortgage'},{k:'equity',label:'Your equity'},{k:'refi',label:'Refinance / pull cash out'},{k:'growth',label:'If it grows in value'});}
+  else{c.push({k:'costsale',label:'Costs vs sale vs profit'});}
+  c.push({k:'acq',label:'Acquisition costs'},{k:'refurb',label:'Refurbishment'},{k:'holding',label:'Holding'},{k:'finance',label:'Finance costs'});
+  if(!isB)c.push({k:'selling',label:'Selling costs'});
+  c.push({k:'totals',label:'Totals & returns'});return c;}
+function pdfPickerHTML(d){var isB=calc(d).isBtl,cat=pdfCatalog(isB),hide=store.pdfHide||{},open=!!store._pdfOpen;
+  var h='<button class="cmpbtn" style="margin-top:14px" onclick="togglePdfPick()">Choose what goes in the PDF '+(open?'&#9650;':'&#9660;')+'</button>';
+  if(open){h+='<div class="cmpset"><div class="cmpset-h">Include in the report</div>'+cat.map(function(it){return '<label class="cmprow"><input type="checkbox" '+(hide[it.k]?'':'checked')+' onchange="togglePdfSec(\''+it.k+'\')"><span>'+it.label+'</span></label>';}).join('')+'</div>';}
+  return h;}
+function togglePdfPick(){store._pdfOpen=!store._pdfOpen;save();renderTab();}
+function togglePdfSec(k){if(!store.pdfHide)store.pdfHide={};if(store.pdfHide[k])delete store.pdfHide[k];else store.pdfHide[k]=1;save();}
+function exportPDF(){var d=deal(),c=calc(d),isB=c.isBtl,hide=store.pdfHide||{};
   var gp=num(d.growthPct)||5,g=gp/100,base=num(d.gdv)||num(d.marketValue)||c.pp;
   var secs=[];
-  secs.push({h:'Headline',rows:[['Deal score',healthScores(c).overall+' / 100',true],[isB?'Net cash flow / mo':'Expected profit',isB?money(c.netCF):money(c.profit),true],[isB?'Annual cash flow':'Profit margin (on GDV)',isB?money(c.annualCF):pct(c.margin)],[isB?'Gross yield':'Return on cash (ROI)',isB?pct(c.grossYield):pct(c.roi)],['Total cash needed',money(c.cashInvested)],isB?['Cash-on-cash return',pct(c.coc)]:['Break-even sale',money(c.breakEven)]]});
-  secs.push({h:'The purchase',rows:[['Address',d.address||'-'],['Purchase price',money(c.pp)],['Market value (as-is)',money(num(d.marketValue))],['End value / GDV',money(c.gdv)],['Discount below market value',pct(c.discount)],['Your deposit ('+num(d.depositPct)+'%)',money(c.deposit)],['Mortgage / loan',money(c.mortgage)],['Loan to value (LTV)',pct(c.ltv)],['Floor area',num(d.floorArea)+' m2'],['Price per m2',money(c.ppm2)]]});
+  secs.push({k:'headline',h:'Headline',rows:[['Deal score',healthScores(c).overall+' / 100',true],[isB?'Net cash flow / mo':'Expected profit',isB?money(c.netCF):money(c.profit),true],[isB?'Annual cash flow':'Profit margin (on GDV)',isB?money(c.annualCF):pct(c.margin)],[isB?'Gross yield':'Return on cash (ROI)',isB?pct(c.grossYield):pct(c.roi)],['Total cash needed',money(c.cashInvested)],isB?['Cash-on-cash return',pct(c.coc)]:['Break-even sale',money(c.breakEven)]]});
+  secs.push({k:'purchase',h:'The purchase',rows:[['Address',d.address||'-'],['Purchase price',money(c.pp)],['Market value (as-is)',money(num(d.marketValue))],['End value / GDV',money(c.gdv)],['Discount below market value',pct(c.discount)],['Your deposit ('+num(d.depositPct)+'%)',money(c.deposit)],['Mortgage / loan',money(c.mortgage)],['Loan to value (LTV)',pct(c.ltv)],['Floor area',num(d.floorArea)+' m2'],['Price per m2',money(c.ppm2)]]});
   if(isB){
-    secs.push({h:'Rent vs mortgage - every month',rows:[['Rent received',money(c.rentM)],['Mortgage payment',money(c.monthlyPay)],['Running costs',money(c.opMonthly)],['Net cash flow',money(c.netCF),true],['Annual cash flow',money(c.annualCF)]]});
-    secs.push({h:'Your equity',rows:[['Property value',money(c.gdv)],['Your mortgage',money(c.mortgage)],['Your equity (what is left in it)',money(c.gdv-c.mortgage),true],['Gross yield',pct(c.grossYield)],['Net yield',pct(c.netYield)]]});
-    secs.push({h:'Refinance to pull cash out (at '+num(d.refiLTV)+'% LTV)',rows:[['New mortgage',money(c.newLoan)],['Cash you can pull out',money(c.refiRelease),true],['New mortgage payment',money(c.refiPay)+' /mo'],['Net income after refinancing',money(c.refiNetCF)+' /mo'],['Capital left in the deal',money(c.capitalLeftIn)]]});
+    secs.push({k:'monthly',h:'Rent vs mortgage - every month',rows:[['Rent received',money(c.rentM)],['Mortgage payment',money(c.monthlyPay)],['Running costs',money(c.opMonthly)],['Net cash flow',money(c.netCF),true],['Annual cash flow',money(c.annualCF)]]});
+    secs.push({k:'equity',h:'Your equity',rows:[['Property value',money(c.gdv)],['Your mortgage',money(c.mortgage)],['Your equity (what is left in it)',money(c.gdv-c.mortgage),true],['Gross yield',pct(c.grossYield)],['Net yield',pct(c.netYield)]]});
+    secs.push({k:'refi',h:'Refinance to pull cash out (at '+num(d.refiLTV)+'% LTV)',rows:[['New mortgage',money(c.newLoan)],['Cash you can pull out',money(c.refiRelease),true],['New mortgage payment',money(c.refiPay)+' /mo'],['Net income after refinancing',money(c.refiNetCF)+' /mo'],['Capital left in the deal',money(c.capitalLeftIn)]]});
     var grows=[['Value today',money(base)]];[5,10,15].forEach(function(y){var val=base*Math.pow(1+g,y),gain=val-base,rent=c.netCF*12*y;grows.push(['In '+y+' yrs - property value',money(val)+' (+'+money(gain)+')']);grows.push(['In '+y+' yrs - rent kept',money(rent)]);grows.push(['In '+y+' yrs - total gain',money(gain+rent),true]);});
-    secs.push({h:'If it grows in value (at '+gp+'%/yr)',rows:grows});
+    secs.push({k:'growth',h:'If it grows in value (at '+gp+'%/yr)',rows:grows});
   }else{
-    secs.push({h:'Costs vs sale vs profit',rows:[['It costs you (all in)',money(c.totalProjectCost)],['It sells for (GDV)',money(c.gdv)],['Cash you tie up',money(c.cashInvested)],['Profit',money(c.profit),true],['Profit margin (on GDV)',pct(c.margin)],['Return on cash (ROI)',pct(c.roi)]]});
+    secs.push({k:'costsale',h:'Costs vs sale vs profit',rows:[['It costs you (all in)',money(c.totalProjectCost)],['It sells for (GDV)',money(c.gdv)],['Cash you tie up',money(c.cashInvested)],['Profit',money(c.profit),true],['Profit margin (on GDV)',pct(c.margin)],['Return on cash (ROI)',pct(c.roi)]]});
   }
-  secs.push({h:'Acquisition costs',rows:[['Stamp Duty',money(c.stamp)],['Solicitor',money(num(d.solicitorAcq))],['Searches',money(num(d.searches))],['Survey',money(num(d.survey))],['Land Registry',money(num(d.landRegistry))],['Other',money(num(d.otherAcq)+num(d.mortgageFeesAcq))],['Total acquisition',money(c.acqTotal),true]]});
-  secs.push({h:'Refurbishment',rows:[['Subtotal',money(c.rBase)],['Contingency ('+num(d.contingencyPct)+'%)',money(c.contingency)],['Total refurbishment',money(c.refurb),true],['Cost per m2',money(c.refurbm2)],['% of purchase price',pct(c.refurbPctPP)]]});
-  secs.push({h:'Holding',rows:[['Monthly (incl. mortgage)',money(c.holdMoIncl)],['Project duration',c.months+' months'],['Total (excl. mortgage)',money(c.holdTotNonMort),true]]});
-  secs.push({h:'Finance costs',rows:[['Arrangement fee',money(c.arrange)],['Broker fee',money(num(d.brokerFee))],['Valuation fee',money(num(d.valuationFee))],['Interest over project',money(c.financeInterest)],['Total finance costs',money(c.financeCosts),true]]});
-  if(!isB)secs.push({h:'Selling costs',rows:[['Agent fee',money(c.sellAgent)],['Fixed selling costs',money(c.sellFixed)],['Total selling costs',money(c.sellTotal),true]]});
-  secs.push({h:'Totals & returns',rows:[['Total project cost',money(c.totalProjectCost)],['Total cash needed',money(c.cashInvested)],[isB?'Equity created':'Profit',money(c.equity),true],[isB?'Return on cash left in':'ROCE',pct(isB?c.cocLeftIn:c.roce)]]});
+  secs.push({k:'acq',h:'Acquisition costs',rows:[['Stamp Duty',money(c.stamp)],['Solicitor',money(num(d.solicitorAcq))],['Searches',money(num(d.searches))],['Survey',money(num(d.survey))],['Land Registry',money(num(d.landRegistry))],['Other',money(num(d.otherAcq)+num(d.mortgageFeesAcq))],['Total acquisition',money(c.acqTotal),true]]});
+  secs.push({k:'refurb',h:'Refurbishment',rows:[['Subtotal',money(c.rBase)],['Contingency ('+num(d.contingencyPct)+'%)',money(c.contingency)],['Total refurbishment',money(c.refurb),true],['Cost per m2',money(c.refurbm2)],['% of purchase price',pct(c.refurbPctPP)]]});
+  secs.push({k:'holding',h:'Holding',rows:[['Monthly (incl. mortgage)',money(c.holdMoIncl)],['Project duration',c.months+' months'],['Total (excl. mortgage)',money(c.holdTotNonMort),true]]});
+  secs.push({k:'finance',h:'Finance costs',rows:[['Arrangement fee',money(c.arrange)],['Broker fee',money(num(d.brokerFee))],['Valuation fee',money(num(d.valuationFee))],['Interest over project',money(c.financeInterest)],['Total finance costs',money(c.financeCosts),true]]});
+  if(!isB)secs.push({k:'selling',h:'Selling costs',rows:[['Agent fee',money(c.sellAgent)],['Fixed selling costs',money(c.sellFixed)],['Total selling costs',money(c.sellTotal),true]]});
+  secs.push({k:'totals',h:'Totals & returns',rows:[['Total project cost',money(c.totalProjectCost)],['Total cash needed',money(c.cashInvested)],[isB?'Equity created':'Profit',money(c.equity),true],[isB?'Return on cash left in':'ROCE',pct(isB?c.cocLeftIn:c.roce)]]});
+  secs=secs.filter(function(s){return !hide[s.k];});
   var posc=[.16,.5,.34],negc=[.75,.25,.25];
-  var glance=isB?[{lab:'Deal score',val:healthScores(c).overall+'/100'},{lab:'Net cash flow',val:money(c.netCF)+'/mo',c:c.netCF>=0?posc:negc},{lab:'Gross yield',val:pct(c.grossYield)},{lab:'Cash needed',val:money(c.cashInvested)}]
-    :[{lab:'Deal score',val:healthScores(c).overall+'/100'},{lab:'Profit',val:money(c.profit),c:c.profit>=0?posc:negc},{lab:'ROI',val:pct(c.roi)},{lab:'Cash needed',val:money(c.cashInvested)}];
+  var glance=hide['glance']?null:(isB?[{lab:'Deal score',val:healthScores(c).overall+'/100'},{lab:'Net cash flow',val:money(c.netCF)+'/mo',c:c.netCF>=0?posc:negc},{lab:'Gross yield',val:pct(c.grossYield)},{lab:'Cash needed',val:money(c.cashInvested)}]
+    :[{lab:'Deal score',val:healthScores(c).overall+'/100'},{lab:'Profit',val:money(c.profit),c:c.profit>=0?posc:negc},{lab:'ROI',val:pct(c.roi)},{lab:'Cash needed',val:money(c.cashInvested)}]);
   var accent=isB?[.12,.56,.47]:[.78,.45,.18];
   makePDF((d.name||'appraisal').replace(/[^\w -]/g,'')+'.pdf',d.name||'Appraisal',(isB?'Buy-to-Let investment appraisal':'Flip / development appraisal'),secs,{accent:accent,kicker:(isB?'Buy-to-Let Investment Appraisal':'Flip / Development Appraisal'),glance:glance,date:today()});}
 load();render();
