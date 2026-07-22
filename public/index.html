@@ -766,17 +766,18 @@ function makePDF(fname,title,subtitle,sections,opts){
     });
     y=yTop-H;br(20);
   }
-  sections.forEach(function(sec){
-    if(y-40<bot)flush();
+  sections.forEach(function(sec,si){
+    if(si>0)br(8);
+    if(y-42<bot)flush();
     FR(mL,y+9,7,7,AC);
-    T(mL+13,y,'F2',12,sec.h,INK);br(6);
+    T(mL+13,y,'F2',12,sec.h,INK);br(10);
     R(mL,mR,y,AC,1.1);br(15);
     if(sec.cols){
       var nc=sec.cols.length,cs0=mL+150,cw=(mR-cs0)/nc;
-      sec.cols.forEach(function(ch,j){var cx=cs0+cw*(j+1);TR(cx-2,y,'F2',9,String(ch),AC);});br(5);R(mL,mR,y,[.8,.8,.8],0.7);br(14);
-      sec.rows.forEach(function(rw){if(y-14<bot)flush();T(mL,y,'F1',10,rw[0],INK);for(var j=0;j<nc;j++){var cx=cs0+cw*(j+1);TR(cx-2,y,'F2',10,String(rw[j+1]),INK);}br(14);});br(10);
+      sec.cols.forEach(function(ch,j){var cx=cs0+cw*(j+1);TR(cx-2,y,'F2',9,String(ch),AC);});br(6);R(mL,mR,y,[.8,.8,.8],0.7);br(15);
+      sec.rows.forEach(function(rw){if(y-15<bot)flush();T(mL,y,'F1',10,rw[0],INK);for(var j=0;j<nc;j++){var cx=cs0+cw*(j+1);TR(cx-2,y,'F2',10,String(rw[j+1]),INK);}br(15);});
     }else{
-      sec.rows.forEach(function(rw){if(y-15<bot)flush();var bold=!!rw[2],col=bold?AC:INK;if(bold)R(mL,mR,y+11,[.86,.87,.89],0.7);T(mL,y,bold?'F2':'F1',11,rw[0],bold?INK:[.2,.2,.23]);TR(mR,y,'F2',11,String(rw[1]),col);br(15);});br(10);
+      sec.rows.forEach(function(rw){var bold=!!rw[2];if(bold)br(5);if(y-15<bot)flush();var col=bold?AC:INK;if(bold)R(mL,mR,y+13,[.8,.81,.84],0.8);T(mL,y,bold?'F2':'F1',11,rw[0],bold?INK:[.2,.2,.23]);TR(mR,y,'F2',11,String(rw[1]),col);br(16);});
     }
   });
   flush();
