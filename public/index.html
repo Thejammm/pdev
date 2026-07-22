@@ -601,6 +601,8 @@ function summaryTab(c,d){var isB=c.isBtl,s=healthScores(c),col=s.overall>=70?'gr
   if(isB)h+='<h2 class="sec">Rent vs mortgage — every month</h2><div class="kv">'+O('Rent received',money(c.rentM),'','','The monthly rent you expect once done up.')+O('Mortgage payment','−'+money(c.monthlyPay),'neg','','Your monthly mortgage payment on this property.')+O('Running costs','−'+money(c.opMonthly),'neg','','Management, maintenance, void allowance, insurance, gas, electrical, licensing, ground rent and service charge.')+O('Net cash flow',money(c.netCF),c.netCF>=0?'pos':'neg',true,'Rent − mortgage − running costs. This is what you actually keep each month.')+'</div>';
   h+='<h2 class="sec">Where the money goes</h2><div class="kv">'+O('Purchase price',money(c.pp))+O('Acquisition',money(c.acqTotal),'','','Stamp duty + solicitor + searches + survey + land registry + other.')+O('Refurbishment',money(c.refurb),'','','All refurbishment lines + contingency.')+O('Finance',money(c.financeCosts),'','','Fees + interest over the whole project.')+O('Holding',money(c.holdTotNonMort),'','','Monthly holding (excl. mortgage) × months.')+(isB?'':O('Selling',money(c.sellTotal),'','','Agent fee + solicitor + EPC + marketing + staging + other.'))+O('Total project cost',money(c.totalProjectCost),'',true,'Purchase + acquisition + refurbishment + finance + holding'+(isB?'.':' + selling.'))+'</div>';
   h+='<h2 class="sec">Returns</h2><div class="kv">'+(isB?O('Annual cash flow',money(c.annualCF),c.annualCF>=0?'pos':'neg',true,'Monthly net cash flow × 12.')+O('Cash-on-cash',pct(c.coc),'','','Annual cash flow ÷ total cash invested.')+O('Gross / net yield',pct(c.grossYield)+' / '+pct(c.netYield),'','','Gross: annual rent ÷ price. Net: income after operating costs ÷ money in.')+O('Equity created',money(c.equity),'','','End value − the new mortgage after you refinance.')+O('Capital left in',money(c.capitalLeftIn),'','','Cash invested − cash released when you refinance.')+O('Return on cash left in',pct(c.cocLeftIn),'','','Annual cash flow ÷ the capital still left in the deal.'):O('Expected profit',money(c.profit),c.profit>=0?'pos':'neg',true,'End value (GDV) − total project cost.')+O('ROI',pct(c.roi),'','','Profit ÷ total cash invested.')+O('ROCE',pct(c.roce),'','','Profit ÷ total project cost.')+O('Profit / month',money(c.profitPM),'','','Profit ÷ project months.')+O('Profit margin (on GDV)',pct(c.margin),'','','Profit ÷ end value.')+O('Break-even sale',money(c.breakEven),'','','The sale price where profit is exactly zero, allowing for the agent’s %.'))+O('Total cash needed',money(c.cashInvested),'','','Deposit + acquisition + finance fees + refurbishment + holding (excl. mortgage).')+'</div>';
+  h+=pdfPickerHTML(d);
+  h+='<button class="pdfbtn" onclick="exportPDF()">Export appraisal (PDF)</button>';
   return h;
 }
 function scorecardTab(c,d){
@@ -737,7 +739,7 @@ function pdfEsc(s){return s.replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/
 function pdfW(s,size){var W={' ':278,',':278,'.':278,'-':333,'%':889,'/':278,'£':556,':':278,'(':333,')':333};var w=0;for(var i=0;i<s.length;i++){var ch=s[i];w+=W[ch]!=null?W[ch]:(ch>='0'&&ch<='9')?556:(ch>='A'&&ch<='Z')?667:500;}return w*size/1000;}
 function makePDF(fname,title,subtitle,sections,opts){
   opts=opts||{};
-  var pw=595,ph=842,mL=50,mR=545,cW=mR-mL,top=762,bot=60;
+  var pw=595,ph=842,mL=50,mR=545,cW=mR-mL,top=748,bot=60;
   var AC=opts.accent||[.12,.22,.39],INK=[.12,.13,.16],MUT=[.42,.42,.45],WHT=[1,1,1],BAND=[.13,.15,.19],PANEL=[.945,.95,.955];
   var kicker=opts.kicker||'Property Development Appraisal',dstr=opts.date||today();
   var pages=[],pg={t:[],l:[],f:[]},y=top;
@@ -790,8 +792,8 @@ function makePDF(fname,title,subtitle,sections,opts){
     var s='';
     s+=band(BAND,0,ph-58,pw,58);
     p.f.forEach(function(fr){s+=band(fr.c,fr.x,fr.y,fr.w,fr.h);});
-    s+=line(AC,mL,ph-64,mR,ph-64,1.6);
-    s+=line([.5,.5,.52],mL,ph-67.5,mR,ph-67.5,0.6);
+    s+=line(AC,mL,ph-62,mR,ph-62,1.6);
+    s+=line([.5,.5,.52],mL,ph-65,mR,ph-65,0.6);
     s+=line([.75,.75,.77],mL,46,mR,46,0.7);
     p.l.forEach(function(l){s+=line(l.c,l.x1,l.y1,l.x2,l.y2,l.w);});
     s+='BT\n';
